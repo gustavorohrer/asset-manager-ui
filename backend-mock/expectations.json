@@ -1,0 +1,162 @@
+[
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/assets"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "body": [
+        {
+          "id": "asset-1",
+          "name": "Production Server",
+          "description": "Main backend server",
+          "createdAt": "2025-01-10T12:00:00Z",
+          "lastScan": "2025-02-01T10:00:00Z"
+        },
+        {
+          "id": "asset-2",
+          "name": "Frontend Cluster",
+          "description": "Cluster for web apps",
+          "createdAt": "2025-01-20T08:30:00Z",
+          "lastScan": "2025-02-02T09:30:00Z"
+        }
+      ]
+    }
+  },
+
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/assets/asset-1"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "body": {
+        "id": "asset-1",
+        "name": "Production Server",
+        "description": "Main backend server",
+        "createdAt": "2025-01-10T12:00:00Z",
+        "lastScan": "2025-02-01T10:00:00Z",
+        "components": ["component-1", "component-2"]
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/assets/asset-1/components/component-1"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "body": {
+        "id": "component-1",
+        "name": "nginx",
+        "version": "1.21.6",
+        "vendor": "nginx.org",
+        "type": "webserver",
+        "createdAt": "2025-01-15T09:00:00Z",
+        "lastScan": "2025-02-01T10:00:00Z",
+        "assetId": "asset-1"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/assets/asset-1/components/component-2"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "body": {
+        "id": "component-2",
+        "name": "PostgreSQL",
+        "version": "14.2",
+        "vendor": "postgres.org",
+        "type": "database",
+        "createdAt": "2025-01-16T11:00:00Z",
+        "lastScan": "2025-02-01T10:00:00Z",
+        "assetId": "asset-1"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/assets/asset-1/vulnerabilities"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "body": [
+        {
+          "id": "vuln-1",
+          "description": "OpenSSL out-of-bounds read",
+          "severity": "HIGH"
+        },
+        {
+          "id": "vuln-2",
+          "description": "Weak SSH configuration",
+          "severity": "MEDIUM"
+        }
+      ]
+    }
+  },
+
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/assets/asset-2"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "body": {
+        "id": "asset-2",
+        "name": "Frontend Cluster",
+        "description": "Cluster for web apps",
+        "createdAt": "2025-01-20T08:30:00Z",
+        "lastScan": "2025-02-02T09:30:00Z",
+        "components": ["component-3"]
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/assets/asset-2/components/component-3"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "body": {
+        "id": "component-3",
+        "name": "React App",
+        "version": "18.2.0",
+        "vendor": "Meta",
+        "type": "frontend",
+        "createdAt": "2025-01-22T14:00:00Z",
+        "lastScan": "2025-02-02T09:30:00Z",
+        "assetId": "asset-2"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/assets/asset-2/vulnerabilities"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "body": [
+        {
+          "id": "vuln-3",
+          "description": "Outdated React dependency",
+          "severity": "LOW"
+        },
+        {
+          "id": "vuln-4",
+          "description": "XSS vulnerability in frontend input",
+          "severity": "CRITICAL"
+        }
+      ]
+    }
+  }
+]
