@@ -119,6 +119,27 @@ pnpm format
 pnpm check
 ```
 
+### Unit testing baseline
+
+This project uses a lightweight unit-testing baseline designed for low maintenance cost:
+
+- `Vitest` runner
+- `React Testing Library` for component-level unit tests when behavior is non-trivial
+- `jsdom` test environment
+
+Commands:
+
+```bash
+pnpm test
+pnpm test:watch
+```
+
+Test location convention:
+
+- Keep unit tests close to the code under test using `*.test.ts` / `*.test.tsx`.
+- Prioritize pure logic and transformations (e.g., filtering, parsing, derived state).
+- Avoid adding tests for trivial presentation-only components.
+
 For release/PR confidence, also run:
 
 ```bash
@@ -135,6 +156,7 @@ This repository uses a basic CI/CD setup suitable for challenge scope:
 - Required checks:
     - `pnpm install --frozen-lockfile`
     - `pnpm check`
+    - `pnpm test`
     - `pnpm build`
 
 Deployments are managed by Vercel:
