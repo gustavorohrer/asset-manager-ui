@@ -125,6 +125,24 @@ For release/PR confidence, also run:
 pnpm build
 ```
 
+### CI/CD baseline (challenge)
+
+This repository uses a basic CI/CD setup suitable for challenge scope:
+
+- CI: GitHub Actions workflow in `.github/workflows/ci.yml`
+- Triggers: `pull_request` to `main` and `push` to `main`
+- Runtime: Node.js `20` + pnpm `8`
+- Required checks:
+    - `pnpm install --frozen-lockfile`
+    - `pnpm check`
+    - `pnpm build`
+
+Deployments are managed by Vercel:
+
+- Preview deploys for Pull Requests
+- Production deploys from `main`
+- `NEXT_PUBLIC_API_BASE_URL` is kept consistent across Preview and Production
+
 ---
 
 ## Engineering Approach
