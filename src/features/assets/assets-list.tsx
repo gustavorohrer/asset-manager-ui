@@ -10,7 +10,7 @@ import { useAssetsQuery } from "@/features/assets/use-assets-query";
 export function AssetsList() {
   const [searchQuery, setSearchQuery] = useState("");
   const { data, error, isLoading, isFetching, refetch } = useAssetsQuery();
-  const assets = data?.data ?? [];
+  const assets = data ?? [];
   const filteredAssets = filterAssets(assets, searchQuery);
 
   return (

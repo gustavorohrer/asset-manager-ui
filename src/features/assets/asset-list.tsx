@@ -1,8 +1,8 @@
-import type { AssetSummary } from "@/domain/assets";
+import type { Asset } from "@/domain/assets";
 import { AssetItem } from "@/features/assets/asset-item";
 
 type AssetListProps = {
-  assets: AssetSummary[];
+  assets: Asset[];
 };
 
 export function AssetList({ assets }: AssetListProps) {

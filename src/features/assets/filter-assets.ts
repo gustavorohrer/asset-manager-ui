@@ -1,6 +1,6 @@
-import type { AssetSummary } from "@/domain/assets";
+import type { Asset } from "@/domain/assets";
 
-export function filterAssets(assets: AssetSummary[], query: string) {
+export function filterAssets(assets: Asset[], query: string) {
   const normalizedQuery = query.trim().toLowerCase();
 
   if (!normalizedQuery) {

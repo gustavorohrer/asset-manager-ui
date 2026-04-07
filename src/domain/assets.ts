@@ -1,13 +1,6 @@
 import { z } from "zod";
 
-export const paginationSchema = z.object({
-  page: z.number().int().nonnegative(),
-  pageSize: z.number().int().positive(),
-  total: z.number().int().nonnegative(),
-  totalPages: z.number().int().nonnegative(),
-});
-
-export const assetSummarySchema = z.object({
+export const assetSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string(),
@@ -18,9 +11,7 @@ export const assetSummarySchema = z.object({
 });
 
 export const listAssetsResponseSchema = z.object({
-  data: z.array(assetSummarySchema),
-  pagination: paginationSchema,
+  data: z.array(assetSchema),
 });
 
-export type AssetSummary = z.infer<typeof assetSummarySchema>;
-export type ListAssetsResponse = z.infer<typeof listAssetsResponseSchema>;
+export type Asset = z.infer<typeof assetSchema>;

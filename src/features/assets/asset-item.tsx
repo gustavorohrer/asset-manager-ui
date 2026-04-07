@@ -1,8 +1,8 @@
-import type { AssetSummary } from "@/domain/assets";
+import type { Asset } from "@/domain/assets";
 import { formatAssetDate } from "@/features/assets/format-asset-date";
 
 type AssetItemProps = {
-  asset: AssetSummary;
+  asset: Asset;
 };
 
 export function AssetItem({ asset }: AssetItemProps) {

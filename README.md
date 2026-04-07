@@ -6,7 +6,7 @@ Frontend solution for the Eclypsium Senior Software Engineer challenge.
 
 ## Reviewer Quick Start (No Setup Required)
 
-- Open the deployed app: `<DEPLOYED_FRONTEND_URL>`
+- Open the deployed app: `https://asset-manager-ui-pi.vercel.app/`
 - Validate the core flow:
     - Asset listing
     - Navigation between assets

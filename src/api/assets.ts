@@ -1,10 +1,8 @@
 import { getApiBaseUrl } from "@/api/config";
-import {
-  type ListAssetsResponse,
-  listAssetsResponseSchema,
-} from "@/domain/assets";
+import type { Asset } from "@/domain/assets";
+import { listAssetsResponseSchema } from "@/domain/assets";
 
-export async function fetchAssets(): Promise<ListAssetsResponse> {
+export async function getAssets(): Promise<Asset[]> {
   const response = await fetch(`${getApiBaseUrl()}/assets`, {
     headers: {
       Accept: "application/json",
@@ -17,5 +15,7 @@ export async function fetchAssets(): Promise<ListAssetsResponse> {
   }
 
   const payload: unknown = await response.json();
-  return listAssetsResponseSchema.parse(payload);
+  const parsedResponse = listAssetsResponseSchema.parse(payload);
+
+  return parsedResponse.data;
 }
