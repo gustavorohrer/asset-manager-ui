@@ -1,83 +1,116 @@
 # Eclypsium Frontend Challenge
 
-Technical challenge for Senior Software Engineer - Frontend position
+Frontend solution for the Eclypsium Senior Software Engineer challenge.
 
-## Overview
+---
 
-This project includes a mock backend that simulates an asset and security vulnerability management system. Your task is to create a frontend application that consumes these endpoints and presents the information in an efficient and attractive manner.
+## Reviewer Quick Start (No Setup Required)
 
-## Expected Features
+- Open the deployed app: `<DEPLOYED_FRONTEND_URL>`
+- Validate the core flow:
+    - Asset listing
+    - Navigation between assets
+    - Asset details and vulnerabilities (if enabled in UI)
 
-Your frontend application should include:
+- API data source: custom backend implementation (not the original mock backend)
 
-- **Asset Dashboard**: List all available assets
+> The deployed app is the primary review path. No local installation is required.
 
-Additionally you can include as optional views:
-  - **Detail View**: Show detailed information for each asset
-  - **Component Management**: Display components for each asset
-  - **Vulnerability Analysis**: Present vulnerabilities found with different severity levels
+---
 
-## Available API Endpoints
+## Architecture Decision
 
-The mock backend provides the following endpoints:
+The original challenge suggests consuming a provided mock backend.
 
-### Assets
-- `GET /assets` - List all assets
-- `GET /assets/{id}` - Get details of a specific asset
-- `GET /assets/{id}/vulnerabilities` - List vulnerabilities for an asset
+This project intentionally uses a **custom backend implementation**, developed as part of a related backend challenge.
 
-### Components
-- `GET /assets/{assetId}/components/{componentId}` - Details of a specific component
+This decision was made to work with a more realistic and complete API, enabling better alignment between frontend behavior and real-world use cases.
 
-### Response Examples
+---
 
-**GET /assets**
-```json
-[
-  {
-    "id": "asset-1",
-    "name": "Production Server",
-    "description": "Main backend server",
-    "createdAt": "2025-01-10T12:00:00Z",
-    "lastScan": "2025-02-01T10:00:00Z"
-  }
-]
-```
+## Backend Source of Truth
 
-**GET /assets/{id}/vulnerabilities**
-```json
-[
-  {
-    "id": "vuln-1",
-    "description": "OpenSSL out-of-bounds read",
-    "severity": "HIGH"
-  }
-]
-```
+The frontend consumes a custom backend, which is considered the source of truth for:
 
+- data models
+- API contracts
+- domain behavior
 
-> If you want to modify the API samples feel free to edit `backend-mock/expectations.json`
+- Backend repository: https://github.com/gustavorohrer/asset-manager
+- Hosted backend: https://asset-manager-production-ddd8.up.railway.app
+- OpenAPI contract: https://github.com/gustavorohrer/asset-manager/blob/main/docs/openapi/openapi.yaml
 
-## Setup Instructions
+---
+
+## Challenge Scope (Frontend)
+
+Core requirement implemented:
+
+- Asset listing
+
+Optional/extended views may include:
+
+- Asset details
+- Components
+- Vulnerabilities and threat visibility
+
+---
+
+## API Endpoints Used
+
+Core read endpoints:
+
+- `GET /assets`
+- `GET /assets/:id`
+- `GET /assets/:id/vulnerabilities`
+
+Additional endpoints are documented in the backend OpenAPI specification.
+
+---
+
+## Local Setup (Optional)
 
 ### Prerequisites
-- Docker and Docker Compose
 
-### Starting the Mock Backend
+- Node.js
+- pnpm
 
-1. Start the mock backend:
-```bash
-docker compose up -d
-```
+### Run locally
 
-The backend will be available at `http://localhost:8080`
+1. Install dependencies:
+   ```bash
+   pnpm install
+   ```
 
-2. Verify it's working:
-```bash
-curl http://localhost:8080/assets
-```
+2. Start the frontend:
+   ```bash
+   pnpm dev
+   ```
 
+3. The app is preconfigured to use the public backend:
+   ```
+   https://asset-manager-production-ddd8.up.railway.app
+   ```
+
+---
+
+## Engineering Approach
+
+- Prioritized clarity and reviewer experience over feature count
+- Built incrementally with small, atomic changes
+- Focused on production-like structure and maintainability
+- Used AI as a tool with strict rules and validation, not as a decision-maker
+
+---
+
+## Notes for Reviewers
+
+- The original mock backend is not used in this implementation, as the project relies on a custom backend aligned with the same domain.
+- No Docker or mock setup is required.
+- The deployed version is the recommended way to evaluate the project.
+
+---
 
 ## Support
 
-If you have any questions about the challenge or encounter issues with the mock backend, please don't hesitate to contact us.
+If anything is unclear during evaluation, feel free to open an issue in this repository.
