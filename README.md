@@ -92,6 +92,23 @@ Additional endpoints are documented in the backend OpenAPI specification.
    https://asset-manager-production-ddd8.up.railway.app
    ```
 
+### Quality checks
+
+Run the frontend quality baseline with Biome:
+
+```bash
+pnpm lint
+pnpm lint:fix
+pnpm format
+pnpm check
+```
+
+For release/PR confidence, also run:
+
+```bash
+pnpm build
+```
+
 ---
 
 ## Engineering Approach

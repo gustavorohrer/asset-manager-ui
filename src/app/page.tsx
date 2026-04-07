@@ -11,18 +11,23 @@ export default function Home() {
           Frontend bootstrap complete
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-          This first atomic step prepares the stack and app shell only. Asset listing,
-          API integration, and feature logic are intentionally deferred to the next steps.
+          This first atomic step prepares the stack and app shell only. Asset
+          listing, API integration, and feature logic are intentionally deferred
+          to the next steps.
         </p>
 
         <div className="mt-8 grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
           <div className="rounded-lg border border-border/70 bg-background/60 p-4">
             <p className="font-medium text-foreground">Stack</p>
-            <p className="mt-1">Next.js, React, TypeScript, Tailwind, shadcn/ui</p>
+            <p className="mt-1">
+              Next.js, React, TypeScript, Tailwind, shadcn/ui
+            </p>
           </div>
           <div className="rounded-lg border border-border/70 bg-background/60 p-4">
             <p className="font-medium text-foreground">Data Layer Foundation</p>
-            <p className="mt-1">TanStack Query + Zod ready for upcoming API work</p>
+            <p className="mt-1">
+              TanStack Query + Zod ready for upcoming API work
+            </p>
           </div>
         </div>
 
