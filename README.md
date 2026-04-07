@@ -87,6 +87,22 @@ Additional endpoints are documented in the backend OpenAPI specification.
    pnpm dev
    ```
 
+### API base URL configuration
+
+Create a local environment file from the example:
+
+```bash
+cp .env.example .env.local
+```
+
+By default, this points to:
+
+```
+https://asset-manager-production-ddd8.up.railway.app
+```
+
+To switch backend environments (for example, staging), update `NEXT_PUBLIC_API_BASE_URL` in `.env.local`.
+
 3. The app is preconfigured to use the public backend:
    ```
    https://asset-manager-production-ddd8.up.railway.app
