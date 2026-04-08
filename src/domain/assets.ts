@@ -39,3 +39,9 @@ export type Asset = z.infer<typeof assetSchema>;
 export type AssetComponent = z.infer<typeof assetComponentSchema>;
 export type AssetDetails = z.infer<typeof assetDetailsSchema>;
 export type ListAssetsResponse = z.infer<typeof listAssetsResponseSchema>;
+
+export const assetSortBySchema = z.enum(["createdAt", "name", "lastScan"]);
+export const assetSortOrderSchema = z.enum(["asc", "desc"]);
+
+export type AssetSortBy = z.infer<typeof assetSortBySchema>;
+export type AssetSortOrder = z.infer<typeof assetSortOrderSchema>;

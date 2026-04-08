@@ -1,5 +1,10 @@
 import { getApiBaseUrl } from "@/api/config";
-import type { AssetDetails, ListAssetsResponse } from "@/domain/assets";
+import type {
+  AssetDetails,
+  AssetSortBy,
+  AssetSortOrder,
+  ListAssetsResponse,
+} from "@/domain/assets";
 import {
   assetDetailsResponseSchema,
   listAssetsResponseSchema,
@@ -19,6 +24,8 @@ export async function getAssets(
   page = 1,
   pageSize = 20,
   search?: string,
+  sortBy?: AssetSortBy,
+  sortOrder?: AssetSortOrder,
 ): Promise<ListAssetsResponse> {
   const url = new URL(`${getApiBaseUrl()}/assets`);
   url.searchParams.append("page", page.toString());
@@ -26,6 +33,14 @@ export async function getAssets(
 
   if (search) {
     url.searchParams.append("name", search);
+  }
+
+  if (sortBy) {
+    url.searchParams.append("sortBy", sortBy);
+  }
+
+  if (sortOrder) {
+    url.searchParams.append("sortOrder", sortOrder);
   }
 
   const response = await fetch(url.toString(), {

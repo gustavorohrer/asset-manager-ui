@@ -3,6 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import type { AssetSortBy, AssetSortOrder } from "@/domain/assets";
 import { AssetList } from "@/features/assets/asset-list";
 import { filterAssets } from "@/features/assets/filter-assets";
 import { useAssetsQuery } from "@/features/assets/use-assets-query";
@@ -14,6 +15,10 @@ export function AssetsList() {
   const searchQuery = searchParams.get("q") ?? "";
   const withVulnerabilities = searchParams.get("vuln") === "1";
   const withThreats = searchParams.get("threat") === "1";
+  const sortBy =
+    (searchParams.get("sortBy") as AssetSortBy | null) ?? "createdAt";
+  const sortOrder =
+    (searchParams.get("sortOrder") as AssetSortOrder | null) ?? "desc";
 
   const {
     data,
@@ -24,7 +29,7 @@ export function AssetsList() {
     fetchNextPage,
     isFetchingNextPage,
     refetch,
-  } = useAssetsQuery(searchQuery);
+  } = useAssetsQuery(searchQuery, sortBy, sortOrder);
 
   const allAssets = data?.pages.flatMap((page) => page.data) ?? [];
 
@@ -35,19 +40,27 @@ export function AssetsList() {
   });
 
   const hasActiveFilters = Boolean(
-    searchQuery || withVulnerabilities || withThreats,
+    searchQuery ||
+      withVulnerabilities ||
+      withThreats ||
+      sortBy !== "createdAt" ||
+      sortOrder !== "desc",
   );
 
   const updateFilters = (nextValues: {
     query?: string;
     withVulnerabilities?: boolean;
     withThreats?: boolean;
+    sortBy?: AssetSortBy;
+    sortOrder?: AssetSortOrder;
   }) => {
     const params = new URLSearchParams(searchParams.toString());
     const nextQuery = nextValues.query ?? searchQuery;
     const nextWithVulnerabilities =
       nextValues.withVulnerabilities ?? withVulnerabilities;
     const nextWithThreats = nextValues.withThreats ?? withThreats;
+    const nextSortBy = nextValues.sortBy ?? sortBy;
+    const nextSortOrder = nextValues.sortOrder ?? sortOrder;
 
     if (nextQuery.trim()) {
       params.set("q", nextQuery);
@@ -65,6 +78,14 @@ export function AssetsList() {
       params.set("threat", "1");
     } else {
       params.delete("threat");
+    }
+
+    if (nextSortBy !== "createdAt" || nextSortOrder !== "desc") {
+      params.set("sortBy", nextSortBy);
+      params.set("sortOrder", nextSortOrder);
+    } else {
+      params.delete("sortBy");
+      params.delete("sortOrder");
     }
 
     const nextQueryString = params.toString();
@@ -85,24 +106,52 @@ export function AssetsList() {
         </p>
       </header>
 
-      <label
-        htmlFor="assets-search"
-        className="flex flex-col gap-2 text-sm text-muted-foreground"
-      >
-        Search
-        <input
-          id="assets-search"
-          type="text"
-          value={searchQuery}
-          onChange={(event) =>
-            updateFilters({
-              query: event.target.value,
-            })
-          }
-          placeholder="Search by name or description"
-          className="h-10 rounded-md border border-border/70 bg-background/80 px-3 text-sm text-foreground outline-none transition-colors focus:border-primary"
-        />
-      </label>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-6">
+        <label
+          htmlFor="assets-search"
+          className="flex flex-1 flex-col gap-2 text-sm text-muted-foreground"
+        >
+          Search
+          <input
+            id="assets-search"
+            type="text"
+            value={searchQuery}
+            onChange={(event) =>
+              updateFilters({
+                query: event.target.value,
+              })
+            }
+            placeholder="Search by name or description"
+            className="h-10 rounded-md border border-border/70 bg-background/80 px-3 text-sm text-foreground outline-none transition-colors focus:border-primary"
+          />
+        </label>
+
+        <label
+          htmlFor="assets-sort"
+          className="flex flex-col gap-2 text-sm text-muted-foreground sm:w-48"
+        >
+          Sort by
+          <select
+            id="assets-sort"
+            value={`${sortBy}-${sortOrder}`}
+            onChange={(event) => {
+              const [nextSortBy, nextSortOrder] = event.target.value.split(
+                "-",
+              ) as [AssetSortBy, AssetSortOrder];
+              updateFilters({
+                sortBy: nextSortBy,
+                sortOrder: nextSortOrder,
+              });
+            }}
+            className="h-10 rounded-md border border-border/70 bg-background/80 px-3 text-sm text-foreground outline-none transition-colors focus:border-primary"
+          >
+            <option value="createdAt-desc">Newest First</option>
+            <option value="createdAt-asc">Oldest First</option>
+            <option value="lastScan-desc">Recently Scanned</option>
+            <option value="name-asc">Name (A-Z)</option>
+          </select>
+        </label>
+      </div>
 
       <div className="flex flex-wrap items-center gap-2">
         <Button
@@ -142,6 +191,8 @@ export function AssetsList() {
               query: "",
               withVulnerabilities: false,
               withThreats: false,
+              sortBy: "createdAt",
+              sortOrder: "desc",
             })
           }
           disabled={!hasActiveFilters}

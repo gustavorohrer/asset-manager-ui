@@ -55,37 +55,39 @@ describe("AssetsList", () => {
     currentSearchParams = new URLSearchParams();
     replaceMock.mockReset();
     useAssetsQueryMock.mockReset();
-    useAssetsQueryMock.mockImplementation((search?: string) => {
-      const filteredBySearch = search
-        ? assets.filter(
-            (a) =>
-              a.name.toLowerCase().includes(search.toLowerCase()) ||
-              a.description.toLowerCase().includes(search.toLowerCase()),
-          )
-        : assets;
+    useAssetsQueryMock.mockImplementation(
+      (search?: string, _sortBy?: string, _sortOrder?: string) => {
+        const filteredBySearch = search
+          ? assets.filter(
+              (a) =>
+                a.name.toLowerCase().includes(search.toLowerCase()) ||
+                a.description.toLowerCase().includes(search.toLowerCase()),
+            )
+          : assets;
 
-      return {
-        data: {
-          pages: [
-            {
-              data: filteredBySearch,
-              pagination: {
-                page: 1,
-                totalPages: 1,
-                total: filteredBySearch.length,
+        return {
+          data: {
+            pages: [
+              {
+                data: filteredBySearch,
+                pagination: {
+                  page: 1,
+                  totalPages: 1,
+                  total: filteredBySearch.length,
+                },
               },
-            },
-          ],
-        },
-        error: null,
-        isLoading: false,
-        isFetching: false,
-        hasNextPage: false,
-        fetchNextPage: vi.fn(),
-        isFetchingNextPage: false,
-        refetch: vi.fn(),
-      };
-    });
+            ],
+          },
+          error: null,
+          isLoading: false,
+          isFetching: false,
+          hasNextPage: false,
+          fetchNextPage: vi.fn(),
+          isFetchingNextPage: false,
+          refetch: vi.fn(),
+        };
+      },
+    );
   });
 
   it("reads query params and applies text + risk filtering", () => {
@@ -135,5 +137,32 @@ describe("AssetsList", () => {
     expect(
       screen.getByText("No assets match the current filters."),
     ).toBeInTheDocument();
+  });
+
+  it("updates URL params when sorting is changed", () => {
+    render(<AssetsList />);
+
+    fireEvent.change(screen.getByLabelText("Sort by"), {
+      target: { value: "name-asc" },
+    });
+
+    expect(replaceMock).toHaveBeenCalledWith(
+      "/assets?sortBy=name&sortOrder=asc",
+      {
+        scroll: false,
+      },
+    );
+  });
+
+  it("resets sorting to default when clearing filters", () => {
+    currentSearchParams = new URLSearchParams("sortBy=name&sortOrder=asc");
+
+    render(<AssetsList />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
+
+    expect(replaceMock).toHaveBeenCalledWith("/assets", {
+      scroll: false,
+    });
   });
 });
