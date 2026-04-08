@@ -1,9 +1,9 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AssetDetails } from "./asset-details";
 import { useAssetQuery } from "./use-asset-query";
 import { useAssetVulnerabilitiesQuery } from "./use-asset-vulnerabilities-query";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
 vi.mock("./use-asset-query");
 vi.mock("./use-asset-vulnerabilities-query");
@@ -38,9 +38,14 @@ const mockAsset = {
 describe("AssetDetails", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useRouter).mockReturnValue({ push: vi.fn() } as any);
+    const push = vi.fn();
+    vi.mocked(useRouter).mockReturnValue({ push } as unknown as ReturnType<
+      typeof useRouter
+    >);
     vi.mocked(usePathname).mockReturnValue("/assets/1");
-    vi.mocked(useSearchParams).mockReturnValue(new URLSearchParams() as any);
+    vi.mocked(useSearchParams).mockReturnValue(
+      new URLSearchParams() as unknown as ReturnType<typeof useSearchParams>,
+    );
 
     vi.mocked(useAssetVulnerabilitiesQuery).mockReturnValue({
       isLoading: false,
@@ -50,7 +55,7 @@ describe("AssetDetails", () => {
       fetchNextPage: vi.fn(),
       isFetchingNextPage: false,
       refetch: vi.fn(),
-    } as any);
+    } as unknown as ReturnType<typeof useAssetVulnerabilitiesQuery>);
   });
 
   it("renders loading state", () => {

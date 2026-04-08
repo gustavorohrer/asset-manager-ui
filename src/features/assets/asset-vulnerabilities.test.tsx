@@ -1,8 +1,8 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AssetVulnerabilities } from "./asset-vulnerabilities";
 import { useAssetVulnerabilitiesQuery } from "./use-asset-vulnerabilities-query";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
 vi.mock("./use-asset-vulnerabilities-query");
 vi.mock("next/navigation", () => ({
@@ -43,15 +43,19 @@ describe("AssetVulnerabilities", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useRouter).mockReturnValue({ push } as any);
+    vi.mocked(useRouter).mockReturnValue({ push } as unknown as ReturnType<
+      typeof useRouter
+    >);
     vi.mocked(usePathname).mockReturnValue("/assets/1");
-    vi.mocked(useSearchParams).mockReturnValue(new URLSearchParams() as any);
+    vi.mocked(useSearchParams).mockReturnValue(
+      new URLSearchParams() as unknown as ReturnType<typeof useSearchParams>,
+    );
   });
 
   it("renders loading state", () => {
     vi.mocked(useAssetVulnerabilitiesQuery).mockReturnValue({
       isLoading: true,
-    } as any);
+    } as unknown as ReturnType<typeof useAssetVulnerabilitiesQuery>);
 
     render(<AssetVulnerabilities assetId="1" />);
     expect(screen.getByText("Vulnerabilities")).toBeInTheDocument();
@@ -63,10 +67,12 @@ describe("AssetVulnerabilities", () => {
       isError: true,
       isLoading: false,
       refetch,
-    } as any);
+    } as unknown as ReturnType<typeof useAssetVulnerabilitiesQuery>);
 
     render(<AssetVulnerabilities assetId="1" />);
-    expect(screen.getByText("Error loading vulnerabilities")).toBeInTheDocument();
+    expect(
+      screen.getByText("Error loading vulnerabilities"),
+    ).toBeInTheDocument();
     fireEvent.click(screen.getByText("Retry"));
     expect(refetch).toHaveBeenCalled();
   });
@@ -76,7 +82,7 @@ describe("AssetVulnerabilities", () => {
       data: { pages: [{ data: [], pagination: { total: 0 } }] },
       isLoading: false,
       isError: false,
-    } as any);
+    } as unknown as ReturnType<typeof useAssetVulnerabilitiesQuery>);
 
     render(<AssetVulnerabilities assetId="1" />);
     expect(
@@ -91,7 +97,7 @@ describe("AssetVulnerabilities", () => {
       },
       isLoading: false,
       isError: false,
-    } as any);
+    } as unknown as ReturnType<typeof useAssetVulnerabilitiesQuery>);
 
     render(<AssetVulnerabilities assetId="1" />);
 
@@ -115,7 +121,7 @@ describe("AssetVulnerabilities", () => {
       isError: false,
       hasNextPage: true,
       fetchNextPage,
-    } as any);
+    } as unknown as ReturnType<typeof useAssetVulnerabilitiesQuery>);
 
     render(<AssetVulnerabilities assetId="1" />);
     const loadMoreButton = screen.getByText("Load more");
@@ -131,7 +137,7 @@ describe("AssetVulnerabilities", () => {
       },
       isLoading: false,
       isError: false,
-    } as any);
+    } as unknown as ReturnType<typeof useAssetVulnerabilitiesQuery>);
 
     render(<AssetVulnerabilities assetId="1" />);
 
@@ -145,14 +151,13 @@ describe("AssetVulnerabilities", () => {
 
   it("calls query with severity from URL", () => {
     vi.mocked(useSearchParams).mockReturnValue(
-      new URLSearchParams("severity=critical") as any,
+      new URLSearchParams("severity=critical") as unknown as ReturnType<
+        typeof useSearchParams
+      >,
     );
 
     render(<AssetVulnerabilities assetId="1" />);
 
-    expect(useAssetVulnerabilitiesQuery).toHaveBeenCalledWith(
-      "1",
-      "CRITICAL",
-    );
+    expect(useAssetVulnerabilitiesQuery).toHaveBeenCalledWith("1", "CRITICAL");
   });
 });

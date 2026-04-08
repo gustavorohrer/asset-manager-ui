@@ -6,8 +6,8 @@ import {
 } from "@/domain/assets";
 import {
   type ListAssetVulnerabilitiesResponse,
-  type VulnerabilitySeverity,
   listAssetVulnerabilitiesResponseSchema,
+  type VulnerabilitySeverity,
 } from "@/domain/vulnerabilities";
 
 export async function getAssets(): Promise<Asset[]> {

@@ -1,13 +1,16 @@
 "use client";
 
-import { AlertCircle, RefreshCcw, ArrowUpRight, Filter } from "lucide-react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { useAssetVulnerabilitiesQuery } from "./use-asset-vulnerabilities-query";
+import { AlertCircle, ArrowUpRight, Filter, RefreshCcw } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import type {
+  AssetVulnerability,
+  VulnerabilitySeverity,
+} from "@/domain/vulnerabilities";
+import { cn } from "@/lib/utils";
 import { AssetVulnerabilitiesSkeleton } from "./asset-vulnerabilities-skeleton";
 import { formatAssetDate } from "./format-asset-date";
-import { Button } from "@/components/ui/button";
-import type { AssetVulnerability, VulnerabilitySeverity } from "@/domain/vulnerabilities";
-import { cn } from "@/lib/utils";
+import { useAssetVulnerabilitiesQuery } from "./use-asset-vulnerabilities-query";
 
 const SEVERITIES: (VulnerabilitySeverity | "ALL")[] = [
   "ALL",
@@ -36,7 +39,8 @@ export function AssetVulnerabilities({ assetId }: { assetId: string }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const currentSeverity = (searchParams.get("severity")?.toUpperCase() as VulnerabilitySeverity) || "ALL";
+  const rawSeverity = searchParams.get("severity")?.toUpperCase();
+  const currentSeverity = SEVERITIES.find((s) => s === rawSeverity) || "ALL";
 
   const {
     data,
@@ -68,7 +72,9 @@ export function AssetVulnerabilities({ assetId }: { assetId: string }) {
     <section className="space-y-6 pt-4 border-t border-border/40">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
-          <h2 className="text-xl font-semibold tracking-tight">Vulnerabilities</h2>
+          <h2 className="text-xl font-semibold tracking-tight">
+            Vulnerabilities
+          </h2>
           {!isLoading && !isError && (
             <p className="text-xs text-muted-foreground">
               {totalVulnerabilities}{" "}
@@ -88,8 +94,11 @@ export function AssetVulnerabilities({ assetId }: { assetId: string }) {
               onClick={() => handleSeverityChange(severity)}
               className={cn(
                 "h-7 px-2.5 text-[10px] font-bold transition-all",
-                currentSeverity !== severity && "text-muted-foreground hover:text-foreground",
-                currentSeverity === severity && severity !== "ALL" && "border-transparent",
+                currentSeverity !== severity &&
+                  "text-muted-foreground hover:text-foreground",
+                currentSeverity === severity &&
+                  severity !== "ALL" &&
+                  "border-transparent",
               )}
               style={
                 currentSeverity === severity && severity !== "ALL"
@@ -153,13 +162,16 @@ export function AssetVulnerabilities({ assetId }: { assetId: string }) {
         <>
           <div className="space-y-8">
             {Object.entries(
-              vulnerabilities.reduce((acc, vuln) => {
-                if (!acc[vuln.componentName]) {
-                  acc[vuln.componentName] = [];
-                }
-                acc[vuln.componentName].push(vuln);
-                return acc;
-              }, {} as Record<string, AssetVulnerability[]>),
+              vulnerabilities.reduce(
+                (acc, vuln) => {
+                  if (!acc[vuln.componentName]) {
+                    acc[vuln.componentName] = [];
+                  }
+                  acc[vuln.componentName].push(vuln);
+                  return acc;
+                },
+                {} as Record<string, AssetVulnerability[]>,
+              ),
             ).map(([componentName, items]) => (
               <div key={componentName} className="space-y-4">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 group/title">

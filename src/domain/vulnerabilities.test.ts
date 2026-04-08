@@ -22,7 +22,8 @@ describe("vulnerabilities domain", () => {
       },
     };
 
-    const result = listAssetVulnerabilitiesResponseSchema.safeParse(validResponse);
+    const result =
+      listAssetVulnerabilitiesResponseSchema.safeParse(validResponse);
     expect(result.success).toBe(true);
   });
 
@@ -46,7 +47,8 @@ describe("vulnerabilities domain", () => {
       },
     };
 
-    const result = listAssetVulnerabilitiesResponseSchema.safeParse(invalidResponse);
+    const result =
+      listAssetVulnerabilitiesResponseSchema.safeParse(invalidResponse);
     expect(result.success).toBe(false);
   });
 });

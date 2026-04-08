@@ -4,9 +4,9 @@ import { AlertCircle, ChevronRight, RefreshCcw } from "lucide-react";
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { AssetDetailsSkeleton } from "@/features/assets/asset-details-skeleton";
+import { AssetVulnerabilities } from "@/features/assets/asset-vulnerabilities";
 import { formatAssetDate } from "@/features/assets/format-asset-date";
 import { useAssetQuery } from "@/features/assets/use-asset-query";
-import { AssetVulnerabilities } from "@/features/assets/asset-vulnerabilities";
 import { cn } from "@/lib/utils";
 
 type AssetDetailsProps = {
