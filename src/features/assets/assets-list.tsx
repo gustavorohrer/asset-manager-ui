@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Filter, Search } from "lucide-react";
+import { Calendar, ChevronDown, Filter, Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -183,25 +183,28 @@ export function AssetsList() {
           className="flex flex-col gap-2 text-sm text-muted-foreground sm:w-48"
         >
           Sort by
-          <select
-            id="assets-sort"
-            value={`${sortBy}-${sortOrder}`}
-            onChange={(event) => {
-              const [nextSortBy, nextSortOrder] = event.target.value.split(
-                "-",
-              ) as [AssetSortBy, AssetSortOrder];
-              updateFilters({
-                sortBy: nextSortBy,
-                sortOrder: nextSortOrder,
-              });
-            }}
-            className={`h-10 rounded-md border border-border/70 bg-background/80 px-3 text-sm text-foreground outline-none transition-all focus:border-primary ${sortBy !== "createdAt" || sortOrder !== "desc" ? "border-primary/60 bg-primary/5 shadow-sm shadow-primary/10" : ""}`}
-          >
-            <option value="createdAt-desc">Newest First</option>
-            <option value="createdAt-asc">Oldest First</option>
-            <option value="lastScan-desc">Recently Scanned</option>
-            <option value="name-asc">Name (A-Z)</option>
-          </select>
+          <div className="relative">
+            <select
+              id="assets-sort"
+              value={`${sortBy}-${sortOrder}`}
+              onChange={(event) => {
+                const [nextSortBy, nextSortOrder] = event.target.value.split(
+                  "-",
+                ) as [AssetSortBy, AssetSortOrder];
+                updateFilters({
+                  sortBy: nextSortBy,
+                  sortOrder: nextSortOrder,
+                });
+              }}
+              className={`h-10 w-full appearance-none rounded-md border border-border/70 bg-background/80 pl-3 pr-10 text-sm text-foreground outline-none transition-all focus:border-primary ${sortBy !== "createdAt" || sortOrder !== "desc" ? "border-primary/60 bg-primary/5 shadow-sm shadow-primary/10" : ""}`}
+            >
+              <option value="createdAt-desc">Newest First</option>
+              <option value="createdAt-asc">Oldest First</option>
+              <option value="lastScan-desc">Recently Scanned</option>
+              <option value="name-asc">Name (A-Z)</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70" />
+          </div>
         </label>
       </div>
 
