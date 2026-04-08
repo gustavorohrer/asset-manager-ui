@@ -10,7 +10,7 @@ Frontend solution for the Eclypsium Senior Software Engineer challenge.
 - Validate the core flow:
     - Asset listing
     - Navigation between assets
-    - Asset details and vulnerabilities (if enabled in UI)
+    - Asset details and vulnerabilities
 
 - API data source: custom backend implementation (not the original mock backend)
 
@@ -50,9 +50,11 @@ Core requirements and features implemented:
 - **Advanced Filtering**: Search by name/description and toggle filters for assets with vulnerabilities or threats.
 - **Asset Details**: Dedicated view for each asset (dynamic routing).
 - **Component Inventory**: Visibility of internal components for each asset.
+- **Vulnerability Inventory**: Real vulnerabilities shown in Asset Details, grouped by component and sorted by severity.
 - **Risk Visibility**: Clear badges for assets and components with security signals.
 - **UX Excellence**:
     - Breadcrumbs for easy navigation.
+    - Intra-page navigation: Click a vulnerability's component to jump to its details.
     - Performance-first loading with custom Skeletons.
     - Error handling with "Retry" functionality for API failures.
 

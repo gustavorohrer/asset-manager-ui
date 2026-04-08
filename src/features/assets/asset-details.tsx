@@ -6,6 +6,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { AssetDetailsSkeleton } from "@/features/assets/asset-details-skeleton";
 import { formatAssetDate } from "@/features/assets/format-asset-date";
 import { useAssetQuery } from "@/features/assets/use-asset-query";
+import { AssetVulnerabilities } from "@/features/assets/asset-vulnerabilities";
 import { cn } from "@/lib/utils";
 
 type AssetDetailsProps = {
@@ -137,6 +138,7 @@ export function AssetDetails({ id }: AssetDetailsProps) {
               {asset.components.map((component) => (
                 <li
                   key={component.id}
+                  id={`component-${component.id}`}
                   className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-lg border border-border/70 bg-background/30 p-4 hover:border-primary/50 transition-colors"
                 >
                   <div>
@@ -160,6 +162,8 @@ export function AssetDetails({ id }: AssetDetailsProps) {
             </ul>
           )}
         </section>
+
+        <AssetVulnerabilities assetId={asset.id} />
       </div>
     </div>
   );

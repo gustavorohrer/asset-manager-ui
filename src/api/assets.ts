@@ -4,6 +4,11 @@ import {
   assetDetailsResponseSchema,
   listAssetsResponseSchema,
 } from "@/domain/assets";
+import {
+  type ListAssetVulnerabilitiesResponse,
+  type VulnerabilitySeverity,
+  listAssetVulnerabilitiesResponseSchema,
+} from "@/domain/vulnerabilities";
 
 export async function getAssets(): Promise<Asset[]> {
   const response = await fetch(`${getApiBaseUrl()}/assets`, {
@@ -39,4 +44,35 @@ export async function getAsset(id: string): Promise<AssetDetails> {
   const parsedResponse = assetDetailsResponseSchema.parse(payload);
 
   return parsedResponse.data;
+}
+
+export async function getAssetVulnerabilities(
+  assetId: string,
+  page = 1,
+  pageSize = 10,
+  severity?: VulnerabilitySeverity,
+): Promise<ListAssetVulnerabilitiesResponse> {
+  const url = new URL(`${getApiBaseUrl()}/assets/${assetId}/vulnerabilities`);
+  url.searchParams.append("page", page.toString());
+  url.searchParams.append("pageSize", pageSize.toString());
+
+  if (severity) {
+    url.searchParams.append("severity", severity);
+  }
+
+  const response = await fetch(url.toString(), {
+    headers: {
+      Accept: "application/json",
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch vulnerabilities for asset ${assetId}: ${response.status}`,
+    );
+  }
+
+  const payload: unknown = await response.json();
+  return listAssetVulnerabilitiesResponseSchema.parse(payload);
 }

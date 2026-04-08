@@ -1,9 +1,17 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import { AssetDetails } from "./asset-details";
 import { useAssetQuery } from "./use-asset-query";
+import { useAssetVulnerabilitiesQuery } from "./use-asset-vulnerabilities-query";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
 vi.mock("./use-asset-query");
+vi.mock("./use-asset-vulnerabilities-query");
+vi.mock("next/navigation", () => ({
+  useRouter: vi.fn(),
+  useSearchParams: vi.fn(),
+  usePathname: vi.fn(),
+}));
 
 const mockAsset = {
   id: "1",
@@ -28,6 +36,23 @@ const mockAsset = {
 };
 
 describe("AssetDetails", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(useRouter).mockReturnValue({ push: vi.fn() } as any);
+    vi.mocked(usePathname).mockReturnValue("/assets/1");
+    vi.mocked(useSearchParams).mockReturnValue(new URLSearchParams() as any);
+
+    vi.mocked(useAssetVulnerabilitiesQuery).mockReturnValue({
+      isLoading: false,
+      data: { pages: [{ data: [], pagination: { total: 0 } }] },
+      isError: false,
+      hasNextPage: false,
+      fetchNextPage: vi.fn(),
+      isFetchingNextPage: false,
+      refetch: vi.fn(),
+    } as any);
+  });
+
   it("renders loading state", () => {
     vi.mocked(useAssetQuery).mockReturnValue({
       isLoading: true,
