@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { paginationSchema } from "./vulnerabilities";
 
 export const assetSchema = z.object({
   id: z.string(),
@@ -27,6 +28,7 @@ export const assetDetailsSchema = assetSchema.extend({
 
 export const listAssetsResponseSchema = z.object({
   data: z.array(assetSchema),
+  pagination: paginationSchema,
 });
 
 export const assetDetailsResponseSchema = z.object({
@@ -36,3 +38,4 @@ export const assetDetailsResponseSchema = z.object({
 export type Asset = z.infer<typeof assetSchema>;
 export type AssetComponent = z.infer<typeof assetComponentSchema>;
 export type AssetDetails = z.infer<typeof assetDetailsSchema>;
+export type ListAssetsResponse = z.infer<typeof listAssetsResponseSchema>;

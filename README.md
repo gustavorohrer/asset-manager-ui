@@ -52,6 +52,7 @@ Core requirements and features implemented:
 - **Component Inventory**: Visibility of internal components for each asset.
 - **Vulnerability Inventory**: Real vulnerabilities shown in Asset Details, grouped by component and sorted by severity.
 - **Risk Visibility**: Clear badges for assets and components with security signals.
+- **Strategic Focus**: The application is designed as a **Security Risk Management Dashboard**. The priority is placed on **advanced visualization, multi-layered filtering, and scalability** (server-side operations) to help users prioritize and mitigate vulnerabilities and threats effectively. Pure CRUD operations for asset inventory are intentionally out of scope to maintain focus on security analysis and risk posture.
 - **UX Excellence**:
     - Breadcrumbs for easy navigation.
     - Intra-page navigation: Click a vulnerability's component to jump to its details.

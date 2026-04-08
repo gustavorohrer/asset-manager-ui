@@ -1,5 +1,5 @@
 import { getApiBaseUrl } from "@/api/config";
-import type { Asset, AssetDetails } from "@/domain/assets";
+import type { AssetDetails, ListAssetsResponse } from "@/domain/assets";
 import {
   assetDetailsResponseSchema,
   listAssetsResponseSchema,
@@ -15,8 +15,20 @@ import {
   type VulnerabilitySeverity,
 } from "@/domain/vulnerabilities";
 
-export async function getAssets(): Promise<Asset[]> {
-  const response = await fetch(`${getApiBaseUrl()}/assets`, {
+export async function getAssets(
+  page = 1,
+  pageSize = 20,
+  search?: string,
+): Promise<ListAssetsResponse> {
+  const url = new URL(`${getApiBaseUrl()}/assets`);
+  url.searchParams.append("page", page.toString());
+  url.searchParams.append("pageSize", pageSize.toString());
+
+  if (search) {
+    url.searchParams.append("name", search);
+  }
+
+  const response = await fetch(url.toString(), {
     headers: {
       Accept: "application/json",
     },
@@ -28,9 +40,7 @@ export async function getAssets(): Promise<Asset[]> {
   }
 
   const payload: unknown = await response.json();
-  const parsedResponse = listAssetsResponseSchema.parse(payload);
-
-  return parsedResponse.data;
+  return listAssetsResponseSchema.parse(payload);
 }
 
 export async function getAsset(id: string): Promise<AssetDetails> {

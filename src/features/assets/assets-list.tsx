@@ -14,9 +14,22 @@ export function AssetsList() {
   const searchQuery = searchParams.get("q") ?? "";
   const withVulnerabilities = searchParams.get("vuln") === "1";
   const withThreats = searchParams.get("threat") === "1";
-  const { data, error, isLoading, isFetching, refetch } = useAssetsQuery();
-  const assets = data ?? [];
-  const filteredAssets = filterAssets(assets, searchQuery, {
+
+  const {
+    data,
+    error,
+    isLoading,
+    isFetching,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useAssetsQuery(searchQuery);
+
+  const allAssets = data?.pages.flatMap((page) => page.data) ?? [];
+
+  // Filter by vulnerabilities/threats in frontend since the BE doesn't support these filters yet
+  const filteredAssets = filterAssets(allAssets, "", {
     withVulnerabilities,
     withThreats,
   });
@@ -146,7 +159,7 @@ export function AssetsList() {
             void refetch();
           }}
         />
-      ) : assets.length === 0 ? (
+      ) : allAssets.length === 0 ? (
         <p className="rounded-md border border-dashed border-border/70 bg-background/40 p-6 text-sm text-muted-foreground">
           No assets available.
         </p>
@@ -155,7 +168,21 @@ export function AssetsList() {
           No assets match the current filters.
         </p>
       ) : (
-        <AssetList assets={filteredAssets} />
+        <>
+          <AssetList assets={filteredAssets} />
+          {hasNextPage && (
+            <div className="flex justify-center pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+              >
+                {isFetchingNextPage ? "Loading more..." : "Load more"}
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </section>
   );

@@ -55,12 +55,36 @@ describe("AssetsList", () => {
     currentSearchParams = new URLSearchParams();
     replaceMock.mockReset();
     useAssetsQueryMock.mockReset();
-    useAssetsQueryMock.mockReturnValue({
-      data: assets,
-      error: null,
-      isLoading: false,
-      isFetching: false,
-      refetch: vi.fn(),
+    useAssetsQueryMock.mockImplementation((search?: string) => {
+      const filteredBySearch = search
+        ? assets.filter(
+            (a) =>
+              a.name.toLowerCase().includes(search.toLowerCase()) ||
+              a.description.toLowerCase().includes(search.toLowerCase()),
+          )
+        : assets;
+
+      return {
+        data: {
+          pages: [
+            {
+              data: filteredBySearch,
+              pagination: {
+                page: 1,
+                totalPages: 1,
+                total: filteredBySearch.length,
+              },
+            },
+          ],
+        },
+        error: null,
+        isLoading: false,
+        isFetching: false,
+        hasNextPage: false,
+        fetchNextPage: vi.fn(),
+        isFetchingNextPage: false,
+        refetch: vi.fn(),
+      };
     });
   });
 
