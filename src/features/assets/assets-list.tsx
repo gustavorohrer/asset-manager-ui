@@ -21,7 +21,9 @@ export function AssetsList() {
     withThreats,
   });
 
-  const hasActiveFilters = Boolean(searchQuery || withVulnerabilities || withThreats);
+  const hasActiveFilters = Boolean(
+    searchQuery || withVulnerabilities || withThreats,
+  );
 
   const updateFilters = (nextValues: {
     query?: string;
@@ -53,9 +55,12 @@ export function AssetsList() {
     }
 
     const nextQueryString = params.toString();
-    router.replace(nextQueryString ? `${pathname}?${nextQueryString}` : pathname, {
-      scroll: false,
-    });
+    router.replace(
+      nextQueryString ? `${pathname}?${nextQueryString}` : pathname,
+      {
+        scroll: false,
+      },
+    );
   };
 
   return (

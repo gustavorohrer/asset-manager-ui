@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { AlertCircle, ChevronRight, RefreshCcw } from "lucide-react";
+import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { AssetDetailsSkeleton } from "@/features/assets/asset-details-skeleton";
 import { formatAssetDate } from "@/features/assets/format-asset-date";
@@ -25,13 +25,12 @@ export function AssetDetails({ id }: AssetDetailsProps) {
         <AlertCircle className="mb-4 size-10 text-destructive" />
         <h2 className="mb-2 text-xl font-semibold">Error loading asset</h2>
         <p className="mb-6 text-sm text-muted-foreground">
-          {error instanceof Error ? error.message : "The asset could not be found or there was a network error."}
+          {error instanceof Error
+            ? error.message
+            : "The asset could not be found or there was a network error."}
         </p>
         <div className="flex gap-3">
-          <Link
-            href="/"
-            className={cn(buttonVariants({ variant: "outline" }))}
-          >
+          <Link href="/" className={cn(buttonVariants({ variant: "outline" }))}>
             Back to list
           </Link>
           <Button onClick={() => refetch()} className="gap-2">
@@ -45,7 +44,10 @@ export function AssetDetails({ id }: AssetDetailsProps) {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground" aria-label="Breadcrumb">
+      <nav
+        className="flex items-center gap-2 text-sm text-muted-foreground"
+        aria-label="Breadcrumb"
+      >
         <Link href="/" className="hover:text-foreground transition-colors">
           Assets
         </Link>
@@ -78,7 +80,10 @@ export function AssetDetails({ id }: AssetDetailsProps) {
                     backgroundColor: "rgb(216 150 20 / 0.1)",
                   }}
                 >
-                  <span className="h-2 w-2 rounded-full bg-current" aria-hidden="true" />
+                  <span
+                    className="h-2 w-2 rounded-full bg-current"
+                    aria-hidden="true"
+                  />
                   Vulnerabilities detected
                 </span>
               )}
@@ -91,7 +96,10 @@ export function AssetDetails({ id }: AssetDetailsProps) {
                     backgroundColor: "rgb(232 71 73 / 0.1)",
                   }}
                 >
-                  <span className="h-2 w-2 rounded-full bg-current" aria-hidden="true" />
+                  <span
+                    className="h-2 w-2 rounded-full bg-current"
+                    aria-hidden="true"
+                  />
                   Compromised
                 </span>
               )}
@@ -101,12 +109,20 @@ export function AssetDetails({ id }: AssetDetailsProps) {
 
         <dl className="grid gap-4 sm:grid-cols-2">
           <div className="rounded-lg bg-background/50 p-4 border border-border/40">
-            <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">Created</dt>
-            <dd className="text-sm font-medium">{formatAssetDate(asset.createdAt)}</dd>
+            <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
+              Created
+            </dt>
+            <dd className="text-sm font-medium">
+              {formatAssetDate(asset.createdAt)}
+            </dd>
           </div>
           <div className="rounded-lg bg-background/50 p-4 border border-border/40">
-            <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">Last Scan</dt>
-            <dd className="text-sm font-medium">{formatAssetDate(asset.lastScan)}</dd>
+            <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
+              Last Scan
+            </dt>
+            <dd className="text-sm font-medium">
+              {formatAssetDate(asset.lastScan)}
+            </dd>
           </div>
         </dl>
 
@@ -124,7 +140,9 @@ export function AssetDetails({ id }: AssetDetailsProps) {
                   className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-lg border border-border/70 bg-background/30 p-4 hover:border-primary/50 transition-colors"
                 >
                   <div>
-                    <h3 className="font-semibold text-foreground">{component.name}</h3>
+                    <h3 className="font-semibold text-foreground">
+                      {component.name}
+                    </h3>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {component.vendor} • Version {component.version}
                     </p>

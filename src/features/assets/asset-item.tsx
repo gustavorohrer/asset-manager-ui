@@ -34,7 +34,10 @@ export function AssetItem({ asset }: AssetItemProps) {
                   backgroundColor: "rgb(216 150 20 / 0.1)",
                 }}
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
+                <span
+                  className="h-1.5 w-1.5 rounded-full bg-current"
+                  aria-hidden="true"
+                />
                 Vulnerabilities
               </span>
             )}
@@ -48,7 +51,10 @@ export function AssetItem({ asset }: AssetItemProps) {
                   backgroundColor: "rgb(232 71 73 / 0.1)",
                 }}
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />
+                <span
+                  className="h-1.5 w-1.5 rounded-full bg-current"
+                  aria-hidden="true"
+                />
                 Compromised
               </span>
             )}
@@ -57,13 +63,17 @@ export function AssetItem({ asset }: AssetItemProps) {
 
         <dl className="mt-4 grid grid-cols-1 gap-2 text-[10px] sm:grid-cols-2">
           <div className="rounded-md bg-background/70 p-2 border border-border/10">
-            <dt className="text-muted-foreground uppercase tracking-tight">Created</dt>
+            <dt className="text-muted-foreground uppercase tracking-tight">
+              Created
+            </dt>
             <dd className="mt-0.5 text-foreground font-medium">
               {formatAssetDate(asset.createdAt)}
             </dd>
           </div>
           <div className="rounded-md bg-background/70 p-2 border border-border/10">
-            <dt className="text-muted-foreground uppercase tracking-tight">Last scan</dt>
+            <dt className="text-muted-foreground uppercase tracking-tight">
+              Last scan
+            </dt>
             <dd className="mt-0.5 text-foreground font-medium">
               {formatAssetDate(asset.lastScan)}
             </dd>

@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { AssetDetails } from "./asset-details";
 import { useAssetQuery } from "./use-asset-query";
@@ -34,11 +34,13 @@ describe("AssetDetails", () => {
       data: undefined,
       error: null,
       refetch: vi.fn(),
-    } as any);
+    } as ReturnType<typeof useAssetQuery>);
 
     render(<AssetDetails id="1" />);
     // Verifica que se renderiza el esqueleto (el nav con aria-hidden="true")
-    expect(screen.getByRole("navigation", { hidden: true })).toBeInTheDocument();
+    expect(
+      screen.getByRole("navigation", { hidden: true }),
+    ).toBeInTheDocument();
   });
 
   it("renders error state with retry button", () => {
@@ -48,7 +50,7 @@ describe("AssetDetails", () => {
       isLoading: false,
       data: undefined,
       refetch,
-    } as any);
+    } as ReturnType<typeof useAssetQuery>);
 
     render(<AssetDetails id="1" />);
     expect(screen.getByText("Error loading asset")).toBeInTheDocument();
@@ -64,11 +66,13 @@ describe("AssetDetails", () => {
       isLoading: false,
       error: null,
       refetch: vi.fn(),
-    } as any);
+    } as ReturnType<typeof useAssetQuery>);
 
     render(<AssetDetails id="1" />);
 
-    expect(screen.getByRole("heading", { level: 1, name: mockAsset.name })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 1, name: mockAsset.name }),
+    ).toBeInTheDocument();
     expect(screen.getByText(mockAsset.description)).toBeInTheDocument();
     expect(screen.getByText("Vulnerabilities detected")).toBeInTheDocument();
     expect(screen.getByText("Comp 1")).toBeInTheDocument();
