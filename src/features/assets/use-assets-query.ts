@@ -8,19 +8,40 @@ export function assetsQueryKey(
   search?: string,
   sortBy?: AssetSortBy,
   sortOrder?: AssetSortOrder,
+  lastScanFrom?: string,
+  lastScanTo?: string,
 ) {
-  return ["assets", { search, sortBy, sortOrder }] as const;
+  return [
+    "assets",
+    { search, sortBy, sortOrder, lastScanFrom, lastScanTo },
+  ] as const;
 }
 
 export function useAssetsQuery(
   search?: string,
   sortBy?: AssetSortBy,
   sortOrder?: AssetSortOrder,
+  lastScanFrom?: string,
+  lastScanTo?: string,
 ) {
   return useInfiniteQuery({
-    queryKey: assetsQueryKey(search, sortBy, sortOrder),
+    queryKey: assetsQueryKey(
+      search,
+      sortBy,
+      sortOrder,
+      lastScanFrom,
+      lastScanTo,
+    ),
     queryFn: ({ pageParam }) =>
-      getAssets(pageParam, 20, search, sortBy, sortOrder),
+      getAssets(
+        pageParam,
+        20,
+        search,
+        sortBy,
+        sortOrder,
+        lastScanFrom,
+        lastScanTo,
+      ),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
       const { page, totalPages } = lastPage.pagination;

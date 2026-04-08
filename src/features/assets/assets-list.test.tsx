@@ -56,7 +56,13 @@ describe("AssetsList", () => {
     replaceMock.mockReset();
     useAssetsQueryMock.mockReset();
     useAssetsQueryMock.mockImplementation(
-      (search?: string, _sortBy?: string, _sortOrder?: string) => {
+      (
+        search?: string,
+        _sortBy?: string,
+        _sortOrder?: string,
+        _lastScanFrom?: string,
+        _lastScanTo?: string,
+      ) => {
         const filteredBySearch = search
           ? assets.filter(
               (a) =>
@@ -100,6 +106,11 @@ describe("AssetsList", () => {
       screen
         .getByRole("button", { name: "With vulnerabilities" })
         .getAttribute("aria-pressed"),
+    ).toBe("true");
+    expect(
+      screen
+        .getByRole("button", { name: "With vulnerabilities" })
+        .getAttribute("data-pressed"),
     ).toBe("true");
 
     expect(screen.getByText("Web Gateway")).toBeInTheDocument();
@@ -164,5 +175,88 @@ describe("AssetsList", () => {
     expect(replaceMock).toHaveBeenCalledWith("/assets", {
       scroll: false,
     });
+  });
+
+  it("shows and hides advanced filters panel", () => {
+    render(<AssetsList />);
+
+    expect(screen.queryByLabelText(/Last scan from/i)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Advanced Filters/i }));
+
+    expect(screen.getByLabelText(/Last scan from/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Last scan to/i)).toBeInTheDocument();
+  });
+
+  it("updates URL params when date range is changed and Apply is clicked", () => {
+    render(<AssetsList />);
+    fireEvent.click(screen.getByRole("button", { name: /Advanced Filters/i }));
+
+    fireEvent.change(screen.getByLabelText(/Last scan from/i), {
+      target: { value: "2026-01-01" },
+    });
+
+    // Should not have called replace yet
+    expect(replaceMock).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: /Apply/i }));
+
+    expect(replaceMock).toHaveBeenCalledWith(
+      "/assets?lastScanFrom=2026-01-01",
+      {
+        scroll: false,
+      },
+    );
+  });
+
+  it("disables Apply button when date range is invalid", () => {
+    render(<AssetsList />);
+    fireEvent.click(screen.getByRole("button", { name: /Advanced Filters/i }));
+
+    fireEvent.change(screen.getByLabelText(/Last scan from/i), {
+      target: { value: "2026-02-01" },
+    });
+    fireEvent.change(screen.getByLabelText(/Last scan to/i), {
+      target: { value: "2026-01-01" },
+    });
+
+    expect(screen.getByRole("button", { name: /Apply/i })).toBeDisabled();
+
+    expect(
+      screen.getByText(/"From" date cannot be after "To" date./i),
+    ).toBeInTheDocument();
+  });
+
+  it("prevents manual keyboard input on date fields", () => {
+    render(<AssetsList />);
+    fireEvent.click(screen.getByRole("button", { name: /Advanced Filters/i }));
+
+    const fromInput = screen.getByLabelText(/Last scan from/i);
+
+    const event = new KeyboardEvent("keydown", {
+      key: "a",
+      bubbles: true,
+      cancelable: true,
+    });
+    const preventDefaultSpy = vi.spyOn(event, "preventDefault");
+
+    fireEvent(fromInput, event);
+
+    expect(preventDefaultSpy).toHaveBeenCalled();
+  });
+
+  it("calls showPicker on date fields when clicked", () => {
+    const showPickerMock = vi.fn();
+
+    render(<AssetsList />);
+    fireEvent.click(screen.getByRole("button", { name: /Advanced Filters/i }));
+
+    const fromInput = screen.getByLabelText(/Last scan from/i);
+    // @ts-expect-error - JSDOM doesn't have showPicker
+    fromInput.showPicker = showPickerMock;
+
+    fireEvent.click(fromInput);
+
+    expect(showPickerMock).toHaveBeenCalled();
   });
 });

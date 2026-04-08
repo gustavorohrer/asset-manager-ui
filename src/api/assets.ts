@@ -26,6 +26,8 @@ export async function getAssets(
   search?: string,
   sortBy?: AssetSortBy,
   sortOrder?: AssetSortOrder,
+  lastScanFrom?: string,
+  lastScanTo?: string,
 ): Promise<ListAssetsResponse> {
   const url = new URL(`${getApiBaseUrl()}/assets`);
   url.searchParams.append("page", page.toString());
@@ -41,6 +43,14 @@ export async function getAssets(
 
   if (sortOrder) {
     url.searchParams.append("sortOrder", sortOrder);
+  }
+
+  if (lastScanFrom) {
+    url.searchParams.append("last_scan_from", lastScanFrom);
+  }
+
+  if (lastScanTo) {
+    url.searchParams.append("last_scan_to", lastScanTo);
   }
 
   const response = await fetch(url.toString(), {
