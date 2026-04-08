@@ -36,6 +36,15 @@ describe("filterAssets", () => {
     expect(filterAssets(assets, "   ")).toBe(assets);
   });
 
+  it("returns all assets when risk filters are disabled", () => {
+    const result = filterAssets(assets, "", {
+      withVulnerabilities: false,
+      withThreats: false,
+    });
+
+    expect(result).toBe(assets);
+  });
+
   it("matches by name using case-insensitive search", () => {
     const result = filterAssets(assets, "gAtEwAy");
 
@@ -56,5 +65,71 @@ describe("filterAssets", () => {
     filterAssets(assets, "gateway");
 
     expect(assets).toEqual(original);
+  });
+
+  it("filters by vulnerabilities only", () => {
+    const result = filterAssets(assets, "", {
+      withVulnerabilities: true,
+      withThreats: false,
+    });
+
+    expect(result.map((asset) => asset.id)).toEqual(["2"]);
+  });
+
+  it("filters by threats only", () => {
+    const result = filterAssets(assets, "", {
+      withVulnerabilities: false,
+      withThreats: true,
+    });
+
+    expect(result.map((asset) => asset.id)).toEqual(["3"]);
+  });
+
+  it("applies AND logic when both risk filters are enabled", () => {
+    const result = filterAssets(
+      [
+        ...assets,
+        {
+          id: "4",
+          name: "API Proxy",
+          description: "Public edge node",
+          createdAt: "2026-01-22T10:00:00.000Z",
+          lastScan: "2026-01-26T10:00:00.000Z",
+          hasVulnerabilities: true,
+          hasThreats: true,
+        },
+      ],
+      "",
+      {
+        withVulnerabilities: true,
+        withThreats: true,
+      },
+    );
+
+    expect(result.map((asset) => asset.id)).toEqual(["4"]);
+  });
+
+  it("combines text and risk filters with AND logic", () => {
+    const result = filterAssets(
+      [
+        ...assets,
+        {
+          id: "4",
+          name: "Gateway Replica",
+          description: "Secondary ingress gateway",
+          createdAt: "2026-01-24T10:00:00.000Z",
+          lastScan: "2026-01-28T10:00:00.000Z",
+          hasVulnerabilities: true,
+          hasThreats: false,
+        },
+      ],
+      "gateway",
+      {
+        withVulnerabilities: true,
+        withThreats: false,
+      },
+    );
+
+    expect(result.map((asset) => asset.id)).toEqual(["2", "4"]);
   });
 });

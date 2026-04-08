@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { AssetList } from "@/features/assets/asset-list";
@@ -8,10 +8,55 @@ import { filterAssets } from "@/features/assets/filter-assets";
 import { useAssetsQuery } from "@/features/assets/use-assets-query";
 
 export function AssetsList() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get("q") ?? "";
+  const withVulnerabilities = searchParams.get("vuln") === "1";
+  const withThreats = searchParams.get("threat") === "1";
   const { data, error, isLoading, isFetching, refetch } = useAssetsQuery();
   const assets = data ?? [];
-  const filteredAssets = filterAssets(assets, searchQuery);
+  const filteredAssets = filterAssets(assets, searchQuery, {
+    withVulnerabilities,
+    withThreats,
+  });
+
+  const hasActiveFilters = Boolean(searchQuery || withVulnerabilities || withThreats);
+
+  const updateFilters = (nextValues: {
+    query?: string;
+    withVulnerabilities?: boolean;
+    withThreats?: boolean;
+  }) => {
+    const params = new URLSearchParams(searchParams.toString());
+    const nextQuery = nextValues.query ?? searchQuery;
+    const nextWithVulnerabilities =
+      nextValues.withVulnerabilities ?? withVulnerabilities;
+    const nextWithThreats = nextValues.withThreats ?? withThreats;
+
+    if (nextQuery.trim()) {
+      params.set("q", nextQuery);
+    } else {
+      params.delete("q");
+    }
+
+    if (nextWithVulnerabilities) {
+      params.set("vuln", "1");
+    } else {
+      params.delete("vuln");
+    }
+
+    if (nextWithThreats) {
+      params.set("threat", "1");
+    } else {
+      params.delete("threat");
+    }
+
+    const nextQueryString = params.toString();
+    router.replace(nextQueryString ? `${pathname}?${nextQueryString}` : pathname, {
+      scroll: false,
+    });
+  };
 
   return (
     <section className="space-y-6 rounded-xl border border-border/70 bg-card/40 p-5 sm:p-6">
@@ -31,11 +76,61 @@ export function AssetsList() {
           id="assets-search"
           type="text"
           value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
+          onChange={(event) =>
+            updateFilters({
+              query: event.target.value,
+            })
+          }
           placeholder="Search by name or description"
           className="h-10 rounded-md border border-border/70 bg-background/80 px-3 text-sm text-foreground outline-none transition-colors focus:border-primary"
         />
       </label>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          aria-pressed={withVulnerabilities}
+          onClick={() =>
+            updateFilters({
+              withVulnerabilities: !withVulnerabilities,
+            })
+          }
+          className="aria-pressed:border-primary/60 aria-pressed:bg-primary/10 aria-pressed:text-primary"
+        >
+          With vulnerabilities
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          aria-pressed={withThreats}
+          onClick={() =>
+            updateFilters({
+              withThreats: !withThreats,
+            })
+          }
+          className="aria-pressed:border-primary/60 aria-pressed:bg-primary/10 aria-pressed:text-primary"
+        >
+          With threats
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          onClick={() =>
+            updateFilters({
+              query: "",
+              withVulnerabilities: false,
+              withThreats: false,
+            })
+          }
+          disabled={!hasActiveFilters}
+        >
+          Clear filters
+        </Button>
+      </div>
 
       {isLoading ? (
         <AssetsListSkeleton />
@@ -52,7 +147,7 @@ export function AssetsList() {
         </p>
       ) : filteredAssets.length === 0 ? (
         <p className="rounded-md border border-dashed border-border/70 bg-background/40 p-6 text-sm text-muted-foreground">
-          No assets match your search.
+          No assets match the current filters.
         </p>
       ) : (
         <AssetList assets={filteredAssets} />
