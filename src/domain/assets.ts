@@ -31,6 +31,12 @@ export const listAssetsResponseSchema = z.object({
   pagination: paginationSchema,
 });
 
+export const assetRiskSummarySchema = z.object({
+  total: z.number().int().nonnegative(),
+  withVulnerabilities: z.number().int().nonnegative(),
+  withThreats: z.number().int().nonnegative(),
+});
+
 export const assetDetailsResponseSchema = z.object({
   data: assetDetailsSchema,
 });
@@ -39,6 +45,7 @@ export type Asset = z.infer<typeof assetSchema>;
 export type AssetComponent = z.infer<typeof assetComponentSchema>;
 export type AssetDetails = z.infer<typeof assetDetailsSchema>;
 export type ListAssetsResponse = z.infer<typeof listAssetsResponseSchema>;
+export type AssetRiskSummary = z.infer<typeof assetRiskSummarySchema>;
 
 export const assetSortBySchema = z.enum(["createdAt", "name", "lastScan"]);
 export const assetSortOrderSchema = z.enum(["asc", "desc"]);

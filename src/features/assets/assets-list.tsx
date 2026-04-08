@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { AssetSortBy, AssetSortOrder } from "@/domain/assets";
 import { AssetList } from "@/features/assets/asset-list";
-import { filterAssets } from "@/features/assets/filter-assets";
 import { useAssetsQuery } from "@/features/assets/use-assets-query";
 
 export function AssetsList() {
@@ -51,15 +50,11 @@ export function AssetsList() {
     sortOrder,
     lastScanFrom ? `${lastScanFrom}T00:00:00Z` : undefined,
     lastScanTo ? `${lastScanTo}T23:59:59Z` : undefined,
-  );
-
-  const allAssets = data?.pages.flatMap((page) => page.data) ?? [];
-
-  // Filter by vulnerabilities/threats in frontend since the BE doesn't support these filters yet
-  const filteredAssets = filterAssets(allAssets, "", {
     withVulnerabilities,
     withThreats,
-  });
+  );
+
+  const filteredAssets = data?.pages.flatMap((page) => page.data) ?? [];
 
   const hasActiveFilters = Boolean(
     searchQuery ||
@@ -348,13 +343,11 @@ export function AssetsList() {
             void refetch();
           }}
         />
-      ) : allAssets.length === 0 ? (
-        <p className="rounded-md border border-dashed border-border/70 bg-background/40 p-6 text-sm text-muted-foreground">
-          No assets available.
-        </p>
       ) : filteredAssets.length === 0 ? (
         <p className="rounded-md border border-dashed border-border/70 bg-background/40 p-6 text-sm text-muted-foreground">
-          No assets match the current filters.
+          {hasActiveFilters
+            ? "No assets match the current filters."
+            : "No assets available."}
         </p>
       ) : (
         <>

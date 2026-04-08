@@ -1,12 +1,14 @@
 import { getApiBaseUrl } from "@/api/config";
 import type {
   AssetDetails,
+  AssetRiskSummary,
   AssetSortBy,
   AssetSortOrder,
   ListAssetsResponse,
 } from "@/domain/assets";
 import {
   assetDetailsResponseSchema,
+  assetRiskSummarySchema,
   listAssetsResponseSchema,
 } from "@/domain/assets";
 import {
@@ -28,6 +30,8 @@ export async function getAssets(
   sortOrder?: AssetSortOrder,
   lastScanFrom?: string,
   lastScanTo?: string,
+  hasVulnerabilities?: boolean,
+  hasThreats?: boolean,
 ): Promise<ListAssetsResponse> {
   const url = new URL(`${getApiBaseUrl()}/assets`);
   url.searchParams.append("page", page.toString());
@@ -53,6 +57,17 @@ export async function getAssets(
     url.searchParams.append("last_scan_to", lastScanTo);
   }
 
+  if (hasVulnerabilities !== undefined) {
+    url.searchParams.append(
+      "has_vulnerabilities",
+      hasVulnerabilities.toString(),
+    );
+  }
+
+  if (hasThreats !== undefined) {
+    url.searchParams.append("has_threats", hasThreats.toString());
+  }
+
   const response = await fetch(url.toString(), {
     headers: {
       Accept: "application/json",
@@ -66,6 +81,22 @@ export async function getAssets(
 
   const payload: unknown = await response.json();
   return listAssetsResponseSchema.parse(payload);
+}
+
+export async function getAssetsSummary(): Promise<AssetRiskSummary> {
+  const response = await fetch(`${getApiBaseUrl()}/assets/summary`, {
+    headers: {
+      Accept: "application/json",
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch asset summary: ${response.status}`);
+  }
+
+  const payload: unknown = await response.json();
+  return assetRiskSummarySchema.parse(payload);
 }
 
 export async function getAsset(id: string): Promise<AssetDetails> {

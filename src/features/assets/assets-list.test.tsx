@@ -17,7 +17,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/features/assets/use-assets-query", () => ({
-  useAssetsQuery: () => useAssetsQueryMock(),
+  useAssetsQuery: (...args: unknown[]) => useAssetsQueryMock(...args),
 }));
 
 const assets = [
@@ -62,24 +62,36 @@ describe("AssetsList", () => {
         _sortOrder?: string,
         _lastScanFrom?: string,
         _lastScanTo?: string,
+        hasVulnerabilities?: boolean,
+        hasThreats?: boolean,
       ) => {
-        const filteredBySearch = search
-          ? assets.filter(
-              (a) =>
-                a.name.toLowerCase().includes(search.toLowerCase()) ||
-                a.description.toLowerCase().includes(search.toLowerCase()),
-            )
-          : assets;
+        let filtered = [...assets];
+
+        if (search) {
+          filtered = filtered.filter(
+            (a) =>
+              a.name.toLowerCase().includes(search.toLowerCase()) ||
+              a.description.toLowerCase().includes(search.toLowerCase()),
+          );
+        }
+
+        if (hasVulnerabilities) {
+          filtered = filtered.filter((a) => a.hasVulnerabilities);
+        }
+
+        if (hasThreats) {
+          filtered = filtered.filter((a) => a.hasThreats);
+        }
 
         return {
           data: {
             pages: [
               {
-                data: filteredBySearch,
+                data: filtered,
                 pagination: {
                   page: 1,
                   totalPages: 1,
-                  total: filteredBySearch.length,
+                  total: filtered.length,
                 },
               },
             ],

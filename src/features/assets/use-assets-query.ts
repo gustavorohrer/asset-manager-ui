@@ -10,10 +10,20 @@ export function assetsQueryKey(
   sortOrder?: AssetSortOrder,
   lastScanFrom?: string,
   lastScanTo?: string,
+  hasVulnerabilities?: boolean,
+  hasThreats?: boolean,
 ) {
   return [
     "assets",
-    { search, sortBy, sortOrder, lastScanFrom, lastScanTo },
+    {
+      search,
+      sortBy,
+      sortOrder,
+      lastScanFrom,
+      lastScanTo,
+      hasVulnerabilities,
+      hasThreats,
+    },
   ] as const;
 }
 
@@ -23,6 +33,8 @@ export function useAssetsQuery(
   sortOrder?: AssetSortOrder,
   lastScanFrom?: string,
   lastScanTo?: string,
+  hasVulnerabilities?: boolean,
+  hasThreats?: boolean,
 ) {
   return useInfiniteQuery({
     queryKey: assetsQueryKey(
@@ -31,6 +43,8 @@ export function useAssetsQuery(
       sortOrder,
       lastScanFrom,
       lastScanTo,
+      hasVulnerabilities,
+      hasThreats,
     ),
     queryFn: ({ pageParam }) =>
       getAssets(
@@ -41,6 +55,8 @@ export function useAssetsQuery(
         sortOrder,
         lastScanFrom,
         lastScanTo,
+        hasVulnerabilities,
+        hasThreats,
       ),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
