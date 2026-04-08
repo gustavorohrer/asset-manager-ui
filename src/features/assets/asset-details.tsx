@@ -1,9 +1,18 @@
 "use client";
 
-import { AlertCircle, ChevronRight, RefreshCcw } from "lucide-react";
+import {
+  AlertCircle,
+  Bug,
+  ChevronRight,
+  RefreshCcw,
+  ShieldAlert,
+} from "lucide-react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AssetDetailsSkeleton } from "@/features/assets/asset-details-skeleton";
+import { AssetThreats } from "@/features/assets/asset-threats";
 import { AssetVulnerabilities } from "@/features/assets/asset-vulnerabilities";
 import { formatAssetDate } from "@/features/assets/format-asset-date";
 import { useAssetQuery } from "@/features/assets/use-asset-query";
@@ -14,7 +23,26 @@ type AssetDetailsProps = {
 };
 
 export function AssetDetails({ id }: AssetDetailsProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { data: asset, isLoading, error, refetch } = useAssetQuery(id);
+
+  const currentTab = searchParams.get("tab") || "threats";
+
+  const handleTabChange = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", value);
+
+    // Limpiar filtros específicos de la pestaña anterior para evitar confusión
+    if (value === "threats") {
+      params.delete("severity");
+    } else if (value === "vulnerabilities") {
+      params.delete("riskLevel");
+    }
+
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  };
 
   if (isLoading) {
     return <AssetDetailsSkeleton />;
@@ -163,7 +191,31 @@ export function AssetDetails({ id }: AssetDetailsProps) {
           )}
         </section>
 
-        <AssetVulnerabilities assetId={asset.id} />
+        <div className="pt-6 border-t border-border/40">
+          <Tabs
+            defaultValue="threats"
+            value={currentTab}
+            onValueChange={handleTabChange}
+            className="w-full"
+          >
+            <TabsList>
+              <TabsTrigger value="threats" className="gap-2">
+                <ShieldAlert className="size-3.5" />
+                Threats
+              </TabsTrigger>
+              <TabsTrigger value="vulnerabilities" className="gap-2">
+                <Bug className="size-3.5" />
+                Vulnerabilities
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="threats" className="mt-6">
+              <AssetThreats assetId={asset.id} />
+            </TabsContent>
+            <TabsContent value="vulnerabilities" className="mt-6">
+              <AssetVulnerabilities assetId={asset.id} />
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </div>
   );

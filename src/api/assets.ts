@@ -5,6 +5,11 @@ import {
   listAssetsResponseSchema,
 } from "@/domain/assets";
 import {
+  type ListAssetThreatsResponse,
+  listAssetThreatsResponseSchema,
+  type RiskLevel,
+} from "@/domain/threats";
+import {
   type ListAssetVulnerabilitiesResponse,
   listAssetVulnerabilitiesResponseSchema,
   type VulnerabilitySeverity,
@@ -75,4 +80,35 @@ export async function getAssetVulnerabilities(
 
   const payload: unknown = await response.json();
   return listAssetVulnerabilitiesResponseSchema.parse(payload);
+}
+
+export async function getAssetThreats(
+  assetId: string,
+  page = 1,
+  pageSize = 10,
+  riskLevel?: RiskLevel,
+): Promise<ListAssetThreatsResponse> {
+  const url = new URL(`${getApiBaseUrl()}/assets/${assetId}/threats`);
+  url.searchParams.append("page", page.toString());
+  url.searchParams.append("pageSize", pageSize.toString());
+
+  if (riskLevel) {
+    url.searchParams.append("riskLevel", riskLevel);
+  }
+
+  const response = await fetch(url.toString(), {
+    headers: {
+      Accept: "application/json",
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch threats for asset ${assetId}: ${response.status}`,
+    );
+  }
+
+  const payload: unknown = await response.json();
+  return listAssetThreatsResponseSchema.parse(payload);
 }

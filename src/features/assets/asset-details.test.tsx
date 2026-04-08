@@ -3,10 +3,12 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AssetDetails } from "./asset-details";
 import { useAssetQuery } from "./use-asset-query";
+import { useAssetThreatsQuery } from "./use-asset-threats-query";
 import { useAssetVulnerabilitiesQuery } from "./use-asset-vulnerabilities-query";
 
 vi.mock("./use-asset-query");
 vi.mock("./use-asset-vulnerabilities-query");
+vi.mock("./use-asset-threats-query");
 vi.mock("next/navigation", () => ({
   useRouter: vi.fn(),
   useSearchParams: vi.fn(),
@@ -56,6 +58,16 @@ describe("AssetDetails", () => {
       isFetchingNextPage: false,
       refetch: vi.fn(),
     } as unknown as ReturnType<typeof useAssetVulnerabilitiesQuery>);
+
+    vi.mocked(useAssetThreatsQuery).mockReturnValue({
+      isLoading: false,
+      data: { pages: [{ data: [], pagination: { total: 0 } }] },
+      isError: false,
+      hasNextPage: false,
+      fetchNextPage: vi.fn(),
+      isFetchingNextPage: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof useAssetThreatsQuery>);
   });
 
   it("renders loading state", () => {
@@ -107,5 +119,69 @@ describe("AssetDetails", () => {
     expect(screen.getByText("Vulnerabilities detected")).toBeInTheDocument();
     expect(screen.getByText("Comp 1")).toBeInTheDocument();
     expect(screen.getByText("Vendor 1 • Version 1.0")).toBeInTheDocument();
+
+    // Verify tabs
+    expect(screen.getByRole("tab", { name: /Threats/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: /Vulnerabilities/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("changes tab and cleans other tab filters", () => {
+    const push = vi.fn();
+    vi.mocked(useRouter).mockReturnValue({ push } as unknown as ReturnType<
+      typeof useRouter
+    >);
+    vi.mocked(useSearchParams).mockReturnValue(
+      new URLSearchParams(
+        "tab=threats&riskLevel=high",
+      ) as unknown as ReturnType<typeof useSearchParams>,
+    );
+    vi.mocked(useAssetQuery).mockReturnValue({
+      data: mockAsset,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    } as ReturnType<typeof useAssetQuery>);
+
+    render(<AssetDetails id="1" />);
+
+    const vulnerabilitiesTab = screen.getByRole("tab", {
+      name: /Vulnerabilities/i,
+    });
+    fireEvent.click(vulnerabilitiesTab);
+
+    expect(push).toHaveBeenCalledWith("/assets/1?tab=vulnerabilities", {
+      scroll: false,
+    });
+  });
+
+  it("cleans severity filter when switching to threats", () => {
+    const push = vi.fn();
+    vi.mocked(useRouter).mockReturnValue({ push } as unknown as ReturnType<
+      typeof useRouter
+    >);
+    vi.mocked(useSearchParams).mockReturnValue(
+      new URLSearchParams(
+        "tab=vulnerabilities&severity=critical",
+      ) as unknown as ReturnType<typeof useSearchParams>,
+    );
+    vi.mocked(useAssetQuery).mockReturnValue({
+      data: mockAsset,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    } as ReturnType<typeof useAssetQuery>);
+
+    render(<AssetDetails id="1" />);
+
+    const threatsTab = screen.getByRole("tab", {
+      name: /Threats/i,
+    });
+    fireEvent.click(threatsTab);
+
+    expect(push).toHaveBeenCalledWith("/assets/1?tab=threats", {
+      scroll: false,
+    });
   });
 });
