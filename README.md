@@ -44,15 +44,17 @@ The frontend consumes a custom backend, which is considered the source of truth 
 
 ## Challenge Scope (Frontend)
 
-Core requirement implemented:
+Core requirements and features implemented:
 
-- Asset listing
-
-Optional/extended views may include:
-
-- Asset details
-- Components
-- Vulnerabilities and threat visibility
+- **Asset Listing**: Full list of assets with pagination support (via API).
+- **Advanced Filtering**: Search by name/description and toggle filters for assets with vulnerabilities or threats.
+- **Asset Details**: Dedicated view for each asset (dynamic routing).
+- **Component Inventory**: Visibility of internal components for each asset.
+- **Risk Visibility**: Clear badges for assets and components with security signals.
+- **UX Excellence**:
+    - Breadcrumbs for easy navigation.
+    - Performance-first loading with custom Skeletons.
+    - Error handling with "Retry" functionality for API failures.
 
 ---
 
