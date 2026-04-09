@@ -11,7 +11,7 @@ import {
   type AssetStatsFilter,
   AssetsStatsCards,
 } from "@/features/assets/assets-stats-cards";
-import { useAssetsQuery } from "@/features/assets/use-assets-query";
+import { useAssetsPageQuery } from "@/features/assets/use-assets-query";
 import { useAssetsSummaryQuery } from "@/features/assets/use-assets-summary-query";
 
 const RISK_PRIORITY_DISMISSED_SESSION_KEY = "assets-risk-priority-dismissed";
@@ -20,6 +20,8 @@ export function AssetsList() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const assetsSectionRef = useRef<HTMLElement>(null);
+  const shouldScrollToSectionOnPageChange = useRef(false);
   const searchQuery = searchParams.get("q") ?? "";
   const withVulnerabilities =
     searchParams.get("vuln") === "1" ? true : undefined;
@@ -31,6 +33,7 @@ export function AssetsList() {
     (searchParams.get("sortOrder") as AssetSortOrder | null) ?? "desc";
   const lastScanFrom = searchParams.get("lastScanFrom") ?? "";
   const lastScanTo = searchParams.get("lastScanTo") ?? "";
+  const page = parsePage(searchParams.get("page"));
   const [hasDismissedRiskPriority, setHasDismissedRiskPriority] =
     useState(false);
   const [didLoadRiskPriorityPreference, setDidLoadRiskPriorityPreference] =
@@ -57,16 +60,8 @@ export function AssetsList() {
     Boolean(lastScanFrom || lastScanTo),
   );
 
-  const {
-    data,
-    error,
-    isLoading,
-    isFetching,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-    refetch,
-  } = useAssetsQuery(
+  const { data, error, isLoading, isFetching, refetch } = useAssetsPageQuery(
+    page,
     searchQuery,
     sortBy,
     sortOrder,
@@ -84,7 +79,8 @@ export function AssetsList() {
     refetch: refetchSummary,
   } = useAssetsSummaryQuery();
 
-  const filteredAssets = data?.pages.flatMap((page) => page.data) ?? [];
+  const filteredAssets = data?.data ?? [];
+  const pagination = data?.pagination;
 
   const hasActiveExclusionFilters = Boolean(
     searchQuery ||
@@ -100,17 +96,22 @@ export function AssetsList() {
   );
 
   const updateFilters = useCallback(
-    (nextValues: {
-      query?: string;
-      withVulnerabilities?: boolean;
-      withThreats?: boolean;
-      hasFindings?: boolean;
-      sortBy?: AssetSortBy;
-      sortOrder?: AssetSortOrder;
-      lastScanFrom?: string;
-      lastScanTo?: string;
-    }) => {
+    (
+      nextValues: {
+        query?: string;
+        withVulnerabilities?: boolean;
+        withThreats?: boolean;
+        hasFindings?: boolean;
+        sortBy?: AssetSortBy;
+        sortOrder?: AssetSortOrder;
+        lastScanFrom?: string;
+        lastScanTo?: string;
+        page?: number;
+      },
+      options?: { resetPage?: boolean },
+    ) => {
       const params = new URLSearchParams(searchParams.toString());
+      const shouldResetPage = options?.resetPage ?? true;
       const nextQuery = nextValues.query ?? searchQuery;
       const nextWithVulnerabilities =
         nextValues.withVulnerabilities ?? withVulnerabilities;
@@ -126,6 +127,7 @@ export function AssetsList() {
         nextValues.lastScanTo !== undefined
           ? nextValues.lastScanTo
           : lastScanTo;
+      const nextPage = shouldResetPage ? 1 : (nextValues.page ?? page);
 
       if (nextQuery.trim()) {
         params.set("q", nextQuery);
@@ -173,6 +175,12 @@ export function AssetsList() {
         params.delete("lastScanTo");
       }
 
+      if (nextPage > 1) {
+        params.set("page", nextPage.toString());
+      } else {
+        params.delete("page");
+      }
+
       const nextQueryString = params.toString();
       router.replace(
         nextQueryString ? `${pathname}?${nextQueryString}` : pathname,
@@ -185,6 +193,7 @@ export function AssetsList() {
       hasFindings,
       lastScanFrom,
       lastScanTo,
+      page,
       pathname,
       router,
       searchParams,
@@ -241,6 +250,18 @@ export function AssetsList() {
     updateFilters,
   ]);
 
+  useEffect(() => {
+    if (!shouldScrollToSectionOnPageChange.current) {
+      return;
+    }
+
+    shouldScrollToSectionOnPageChange.current = false;
+    assetsSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  });
+
   const activeStatsFilter: AssetStatsFilter | null = hasFindings
     ? null
     : withVulnerabilities && withThreats
@@ -250,6 +271,25 @@ export function AssetsList() {
         : withThreats
           ? "threats"
           : "all";
+
+  useEffect(() => {
+    if (!pagination) {
+      return;
+    }
+
+    if (pagination.totalPages === 0 || page <= pagination.totalPages) {
+      return;
+    }
+
+    updateFilters(
+      {
+        page: pagination.totalPages,
+      },
+      {
+        resetPage: false,
+      },
+    );
+  }, [page, pagination, updateFilters]);
 
   const handleStatsFilterChange = (filter: AssetStatsFilter) => {
     if (filter === "all") {
@@ -281,8 +321,28 @@ export function AssetsList() {
     });
   };
 
+  const handlePageChange = (nextPage: number) => {
+    if (nextPage === page) {
+      return;
+    }
+
+    shouldScrollToSectionOnPageChange.current = true;
+
+    updateFilters(
+      {
+        page: nextPage,
+      },
+      {
+        resetPage: false,
+      },
+    );
+  };
+
   return (
-    <section className="space-y-6 rounded-xl border border-border/70 bg-card/40 p-5 sm:p-6">
+    <section
+      ref={assetsSectionRef}
+      className="space-y-6 rounded-xl border border-border/70 bg-card/40 p-5 sm:p-6"
+    >
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Assets</h1>
         <p className="text-sm text-muted-foreground">
@@ -523,22 +583,148 @@ export function AssetsList() {
       ) : (
         <>
           <AssetList assets={filteredAssets} />
-          {hasNextPage && (
-            <div className="flex justify-center pt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => fetchNextPage()}
-                disabled={isFetchingNextPage}
-              >
-                {isFetchingNextPage ? "Loading more..." : "Load more"}
-              </Button>
-            </div>
+          {pagination && pagination.totalPages > 1 && (
+            <AssetsPagination
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              total={pagination.total}
+              isFetching={isFetching}
+              onPageChange={handlePageChange}
+            />
           )}
         </>
       )}
     </section>
   );
+}
+
+type AssetsPaginationProps = {
+  page: number;
+  totalPages: number;
+  total: number;
+  isFetching: boolean;
+  onPageChange: (nextPage: number) => void;
+};
+
+function AssetsPagination({
+  page,
+  totalPages,
+  total,
+  isFetching,
+  onPageChange,
+}: AssetsPaginationProps) {
+  const pageItems = getVisiblePageItems(page, totalPages);
+  const isFirstPage = page <= 1;
+  const isLastPage = page >= totalPages;
+
+  return (
+    <div className="space-y-3 pt-4">
+      <p className="text-center text-xs text-muted-foreground">
+        Page {page} of {totalPages} ({total} assets)
+      </p>
+      <nav
+        aria-label="Assets pagination"
+        className="flex flex-wrap items-center justify-center gap-2"
+      >
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={isFetching || isFirstPage}
+          onClick={() => onPageChange(1)}
+        >
+          First
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={isFetching || isFirstPage}
+          onClick={() => onPageChange(page - 1)}
+        >
+          Prev
+        </Button>
+
+        {pageItems.map((item, index) =>
+          item === "ellipsis" ? (
+            <span
+              // biome-ignore lint/suspicious/noArrayIndexKey: deterministic short pagination list with repeated separators
+              key={`${item}-${index}`}
+              className="px-1.5 text-sm text-muted-foreground"
+            >
+              ...
+            </span>
+          ) : (
+            <Button
+              key={item}
+              size="sm"
+              variant={item === page ? "default" : "outline"}
+              disabled={isFetching}
+              aria-current={item === page ? "page" : undefined}
+              onClick={() => onPageChange(item)}
+            >
+              {item}
+            </Button>
+          ),
+        )}
+
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={isFetching || isLastPage}
+          onClick={() => onPageChange(page + 1)}
+        >
+          Next
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={isFetching || isLastPage}
+          onClick={() => onPageChange(totalPages)}
+        >
+          Last
+        </Button>
+      </nav>
+    </div>
+  );
+}
+
+function parsePage(rawPage: string | null): number {
+  if (!rawPage) {
+    return 1;
+  }
+
+  const parsedPage = Number.parseInt(rawPage, 10);
+  if (!Number.isFinite(parsedPage) || parsedPage < 1) {
+    return 1;
+  }
+
+  return parsedPage;
+}
+
+type PageItem = number | "ellipsis";
+
+function getVisiblePageItems(page: number, totalPages: number): PageItem[] {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  const start = Math.max(2, page - 1);
+  const end = Math.min(totalPages - 1, page + 1);
+  const items: PageItem[] = [1];
+
+  if (start > 2) {
+    items.push("ellipsis");
+  }
+
+  for (let current = start; current <= end; current += 1) {
+    items.push(current);
+  }
+
+  if (end < totalPages - 1) {
+    items.push("ellipsis");
+  }
+
+  items.push(totalPages);
+  return items;
 }
 
 function AssetsListSkeleton() {

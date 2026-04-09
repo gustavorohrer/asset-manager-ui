@@ -1,10 +1,11 @@
 "use client";
 
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getAssets } from "@/api/assets";
 import type { AssetSortBy, AssetSortOrder } from "@/domain/assets";
 
-export function assetsQueryKey(
+export function assetsPageQueryKey(
+  page: number,
   search?: string,
   sortBy?: AssetSortBy,
   sortOrder?: AssetSortOrder,
@@ -16,7 +17,9 @@ export function assetsQueryKey(
 ) {
   return [
     "assets",
+    "page",
     {
+      page,
       search,
       sortBy,
       sortOrder,
@@ -29,7 +32,8 @@ export function assetsQueryKey(
   ] as const;
 }
 
-export function useAssetsQuery(
+export function useAssetsPageQuery(
+  page: number,
   search?: string,
   sortBy?: AssetSortBy,
   sortOrder?: AssetSortOrder,
@@ -39,8 +43,9 @@ export function useAssetsQuery(
   hasThreats?: boolean,
   hasFindings?: boolean,
 ) {
-  return useInfiniteQuery({
-    queryKey: assetsQueryKey(
+  return useQuery({
+    queryKey: assetsPageQueryKey(
+      page,
       search,
       sortBy,
       sortOrder,
@@ -50,9 +55,9 @@ export function useAssetsQuery(
       hasThreats,
       hasFindings,
     ),
-    queryFn: ({ pageParam }) =>
+    queryFn: () =>
       getAssets(
-        pageParam,
+        page,
         20,
         search,
         sortBy,
@@ -63,10 +68,6 @@ export function useAssetsQuery(
         hasThreats,
         hasFindings,
       ),
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      const { page, totalPages } = lastPage.pagination;
-      return page < totalPages ? page + 1 : undefined;
-    },
+    placeholderData: keepPreviousData,
   });
 }

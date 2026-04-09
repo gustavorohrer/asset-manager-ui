@@ -4,8 +4,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AssetsList } from "@/features/assets/assets-list";
 
 const replaceMock = vi.fn();
-const useAssetsQueryMock = vi.fn();
+const useAssetsPageQueryMock = vi.fn();
 const useAssetsSummaryQueryMock = vi.fn();
+const scrollIntoViewMock = vi.fn();
 
 let currentSearchParams = new URLSearchParams();
 
@@ -18,7 +19,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/features/assets/use-assets-query", () => ({
-  useAssetsQuery: (...args: unknown[]) => useAssetsQueryMock(...args),
+  useAssetsPageQuery: (...args: unknown[]) => useAssetsPageQueryMock(...args),
 }));
 
 vi.mock("@/features/assets/use-assets-summary-query", () => ({
@@ -59,9 +60,15 @@ const assets = [
 describe("AssetsList", () => {
   beforeEach(() => {
     window.sessionStorage.clear();
+    scrollIntoViewMock.mockReset();
+    Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+      configurable: true,
+      value: scrollIntoViewMock,
+      writable: true,
+    });
     currentSearchParams = new URLSearchParams();
     replaceMock.mockReset();
-    useAssetsQueryMock.mockReset();
+    useAssetsPageQueryMock.mockReset();
     useAssetsSummaryQueryMock.mockReset();
     useAssetsSummaryQueryMock.mockReturnValue({
       data: {
@@ -73,8 +80,9 @@ describe("AssetsList", () => {
       isError: false,
       refetch: vi.fn(),
     });
-    useAssetsQueryMock.mockImplementation(
+    useAssetsPageQueryMock.mockImplementation(
       (
+        _page?: number,
         search?: string,
         _sortBy?: string,
         _sortOrder?: string,
@@ -110,23 +118,17 @@ describe("AssetsList", () => {
 
         return {
           data: {
-            pages: [
-              {
-                data: filtered,
-                pagination: {
-                  page: 1,
-                  totalPages: 1,
-                  total: filtered.length,
-                },
-              },
-            ],
+            data: filtered,
+            pagination: {
+              page: 1,
+              pageSize: 20,
+              totalPages: 1,
+              total: filtered.length,
+            },
           },
           error: null,
           isLoading: false,
           isFetching: false,
-          hasNextPage: false,
-          fetchNextPage: vi.fn(),
-          isFetchingNextPage: false,
           refetch: vi.fn(),
         };
       },
@@ -158,7 +160,8 @@ describe("AssetsList", () => {
   it("does not send risk flags to query hook when URL has no risk params", () => {
     render(<AssetsList />);
 
-    expect(useAssetsQueryMock).toHaveBeenCalledWith(
+    expect(useAssetsPageQueryMock).toHaveBeenCalledWith(
+      1,
       "",
       "createdAt",
       "desc",
@@ -174,7 +177,8 @@ describe("AssetsList", () => {
     currentSearchParams = new URLSearchParams("vuln=1");
     render(<AssetsList />);
 
-    expect(useAssetsQueryMock).toHaveBeenCalledWith(
+    expect(useAssetsPageQueryMock).toHaveBeenCalledWith(
+      1,
       "",
       "createdAt",
       "desc",
@@ -188,7 +192,8 @@ describe("AssetsList", () => {
     currentSearchParams = new URLSearchParams("threat=1");
     render(<AssetsList />);
 
-    expect(useAssetsQueryMock).toHaveBeenCalledWith(
+    expect(useAssetsPageQueryMock).toHaveBeenCalledWith(
+      1,
       "",
       "createdAt",
       "desc",
@@ -464,5 +469,56 @@ describe("AssetsList", () => {
     fireEvent.click(fromInput);
 
     expect(showPickerMock).toHaveBeenCalled();
+  });
+
+  it("reads page param and sends it to assets page query hook", () => {
+    currentSearchParams = new URLSearchParams("page=2");
+
+    render(<AssetsList />);
+
+    expect(useAssetsPageQueryMock).toHaveBeenCalledWith(
+      2,
+      "",
+      "createdAt",
+      "desc",
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    );
+  });
+
+  it("updates URL with next page and scrolls to assets section on page change", async () => {
+    useAssetsPageQueryMock.mockImplementation((page = 1) => ({
+      data: {
+        data: assets,
+        pagination: {
+          page,
+          pageSize: 20,
+          totalPages: 3,
+          total: 45,
+        },
+      },
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    }));
+
+    const { rerender } = render(<AssetsList />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+
+    expect(replaceMock).toHaveBeenCalledWith("/assets?page=2", {
+      scroll: false,
+    });
+
+    currentSearchParams = new URLSearchParams("page=2");
+    rerender(<AssetsList />);
+
+    await waitFor(() => {
+      expect(scrollIntoViewMock).toHaveBeenCalled();
+    });
   });
 });
