@@ -6,7 +6,7 @@ Security-oriented asset inventory UI built for fast reviewer evaluation.
 
 1. Open the deployed app: `https://asset-manager-ui-pi.vercel.app/`
 2. Validate list flow on `/`:
-   - Search by name/description.
+   - Search by asset name.
    - Toggle `With vulnerabilities` and `With threats`.
    - Use advanced date filters and sort.
    - Confirm pagination works.

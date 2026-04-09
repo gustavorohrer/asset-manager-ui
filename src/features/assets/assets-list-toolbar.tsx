@@ -41,7 +41,7 @@ export function AssetsListToolbar({
             onChange={(event) => {
               onSearchChange(event.target.value);
             }}
-            placeholder="Search by name or description"
+            placeholder="Search by asset name"
             className={`h-10 w-full rounded-md border border-border/70 bg-background/80 pl-10 pr-3 text-sm text-foreground outline-none transition-all focus:border-primary ${localSearchQuery ? "border-primary/60 bg-primary/5 shadow-sm shadow-primary/10" : ""}`}
           />
         </div>
