@@ -117,9 +117,7 @@ export function AssetsStatsCards({
               onClick={() => onFilterChange(card.filter)}
               className={cn(
                 "h-auto w-full justify-start rounded-lg border px-4 py-3 text-left",
-                !accentColor &&
-                  isActive &&
-                  "border-primary/60 bg-primary/10",
+                !accentColor && isActive && "border-primary/60 bg-primary/10",
               )}
               style={accentCardStyle}
             >
