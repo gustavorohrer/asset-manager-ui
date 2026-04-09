@@ -37,6 +37,20 @@ const mockAsset = {
   ],
 };
 
+const mockAssetWithManyComponents = {
+  ...mockAsset,
+  components: Array.from({ length: 6 }, (_, index) => ({
+    id: `c-${index + 1}`,
+    name: `Comp ${index + 1}`,
+    version: `${index + 1}.0`,
+    vendor: `Vendor ${index + 1}`,
+    type: "Type X",
+    createdAt: "2024-01-01T00:00:00Z",
+    lastScan: "2024-01-02T00:00:00Z",
+    assetId: "1",
+  })),
+};
+
 describe("AssetDetails", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -125,6 +139,28 @@ describe("AssetDetails", () => {
     expect(
       screen.getByRole("tab", { name: /Vulnerabilities/i }),
     ).toBeInTheDocument();
+  });
+
+  it("collapses component details by default when there are many components", () => {
+    vi.mocked(useAssetQuery).mockReturnValue({
+      data: mockAssetWithManyComponents,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    } as ReturnType<typeof useAssetQuery>);
+
+    render(<AssetDetails id="1" />);
+
+    expect(
+      screen.getByText(
+        "Component details are collapsed by default for easier scanning.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("First Seen")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Comp 1/i }));
+
+    expect(screen.getByText("First Seen")).toBeInTheDocument();
   });
 
   it("changes tab and cleans other tab filters", () => {

@@ -3,12 +3,20 @@
 import {
   AlertCircle,
   Bug,
+  ChevronDown,
   ChevronRight,
   RefreshCcw,
   ShieldAlert,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionHeader,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AssetDetailsSkeleton } from "@/features/assets/asset-details-skeleton";
@@ -21,6 +29,8 @@ import { cn } from "@/lib/utils";
 type AssetDetailsProps = {
   id: string;
 };
+
+const COMPONENT_COLLAPSE_THRESHOLD = 6;
 
 export function AssetDetails({ id }: AssetDetailsProps) {
   const router = useRouter();
@@ -70,6 +80,12 @@ export function AssetDetails({ id }: AssetDetailsProps) {
       </div>
     );
   }
+
+  const shouldCollapseComponentsByDefault =
+    asset.components.length >= COMPONENT_COLLAPSE_THRESHOLD;
+  const defaultOpenComponentIds = shouldCollapseComponentsByDefault
+    ? []
+    : asset.components.map((component) => component.id);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -162,32 +178,84 @@ export function AssetDetails({ id }: AssetDetailsProps) {
               No components detected for this asset.
             </p>
           ) : (
-            <ul className="grid gap-3">
-              {asset.components.map((component) => (
-                <li
-                  key={component.id}
-                  id={`component-${component.id}`}
-                  className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-lg border border-border/70 bg-background/30 p-4 hover:border-primary/50 transition-colors"
-                >
-                  <div>
-                    <h3 className="font-semibold text-foreground">
-                      {component.name}
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {component.vendor} • Version {component.version}
-                    </p>
-                  </div>
-                  <div className="text-left flex flex-col sm:items-end">
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground/70 bg-muted/30 px-1.5 py-0.5 rounded">
-                      {component.type}
-                    </span>
-                    <span className="text-xs text-muted-foreground mt-2">
-                      Scanned: {formatAssetDate(component.lastScan)}
-                    </span>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <>
+              {shouldCollapseComponentsByDefault && (
+                <p className="text-xs text-muted-foreground">
+                  Component details are collapsed by default for easier
+                  scanning.
+                </p>
+              )}
+              <Accordion
+                multiple
+                defaultValue={defaultOpenComponentIds}
+                className="grid gap-3"
+              >
+                {asset.components.map((component) => (
+                  <AccordionItem
+                    key={component.id}
+                    id={`component-${component.id}`}
+                    value={component.id}
+                    className="rounded-lg border border-border/70 bg-background/30 px-4 transition-colors hover:border-primary/40"
+                  >
+                    <AccordionHeader>
+                      <AccordionTrigger className="py-3">
+                        <div className="min-w-0 flex-1">
+                          <span className="block truncate font-semibold text-foreground">
+                            {component.name}
+                          </span>
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            {component.vendor} • Version {component.version}
+                          </p>
+                        </div>
+                        <span className="inline-flex items-center gap-2 text-[10px] uppercase font-bold text-muted-foreground/70 bg-muted/30 px-1.5 py-0.5 rounded">
+                          {component.type}
+                          <ChevronDown
+                            className="size-3.5 transition-transform group-aria-expanded:rotate-180"
+                            aria-hidden="true"
+                          />
+                        </span>
+                      </AccordionTrigger>
+                    </AccordionHeader>
+                    <AccordionContent className="pb-4">
+                      <dl className="grid gap-3 border-t border-border/40 pt-4 text-xs sm:grid-cols-2">
+                        <div className="rounded-md bg-background/60 p-2.5">
+                          <dt className="text-muted-foreground uppercase tracking-wide text-[10px]">
+                            Vendor
+                          </dt>
+                          <dd className="mt-1 text-foreground font-medium">
+                            {component.vendor}
+                          </dd>
+                        </div>
+                        <div className="rounded-md bg-background/60 p-2.5">
+                          <dt className="text-muted-foreground uppercase tracking-wide text-[10px]">
+                            Version
+                          </dt>
+                          <dd className="mt-1 text-foreground font-medium">
+                            {component.version}
+                          </dd>
+                        </div>
+                        <div className="rounded-md bg-background/60 p-2.5">
+                          <dt className="text-muted-foreground uppercase tracking-wide text-[10px]">
+                            First Seen
+                          </dt>
+                          <dd className="mt-1 text-foreground font-medium">
+                            {formatAssetDate(component.createdAt)}
+                          </dd>
+                        </div>
+                        <div className="rounded-md bg-background/60 p-2.5">
+                          <dt className="text-muted-foreground uppercase tracking-wide text-[10px]">
+                            Last Scan
+                          </dt>
+                          <dd className="mt-1 text-foreground font-medium">
+                            {formatAssetDate(component.lastScan)}
+                          </dd>
+                        </div>
+                      </dl>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </>
           )}
         </section>
 
