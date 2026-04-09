@@ -50,12 +50,6 @@ describe("getAsset", () => {
     expect(result.components).toHaveLength(1);
     expect(fetchMock).toHaveBeenCalledWith(
       "https://api.example.com/assets/AST-001",
-      {
-        headers: {
-          Accept: "application/json",
-        },
-        cache: "no-store",
-      },
     );
   });
 
@@ -127,12 +121,6 @@ describe("getAssetsSummary", () => {
     });
     expect(fetchMock).toHaveBeenCalledWith(
       "https://api.example.com/assets/summary",
-      {
-        headers: {
-          Accept: "application/json",
-        },
-        cache: "no-store",
-      },
     );
   });
 

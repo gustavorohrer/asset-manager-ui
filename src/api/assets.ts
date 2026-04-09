@@ -73,12 +73,7 @@ export async function getAssets(
     url.searchParams.append("has_findings", hasFindings.toString());
   }
 
-  const response = await fetch(url.toString(), {
-    headers: {
-      Accept: "application/json",
-    },
-    cache: "no-store",
-  });
+  const response = await fetch(url.toString());
 
   if (!response.ok) {
     throw new Error(`Failed to fetch assets: ${response.status}`);
@@ -89,12 +84,7 @@ export async function getAssets(
 }
 
 export async function getAssetsSummary(): Promise<AssetRiskSummary> {
-  const response = await fetch(`${getApiBaseUrl()}/assets/summary`, {
-    headers: {
-      Accept: "application/json",
-    },
-    cache: "no-store",
-  });
+  const response = await fetch(`${getApiBaseUrl()}/assets/summary`);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch asset summary: ${response.status}`);
@@ -105,12 +95,7 @@ export async function getAssetsSummary(): Promise<AssetRiskSummary> {
 }
 
 export async function getAsset(id: string): Promise<AssetDetails> {
-  const response = await fetch(`${getApiBaseUrl()}/assets/${id}`, {
-    headers: {
-      Accept: "application/json",
-    },
-    cache: "no-store",
-  });
+  const response = await fetch(`${getApiBaseUrl()}/assets/${id}`);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch asset ${id}: ${response.status}`);
@@ -136,12 +121,7 @@ export async function getAssetVulnerabilities(
     url.searchParams.append("severity", severity);
   }
 
-  const response = await fetch(url.toString(), {
-    headers: {
-      Accept: "application/json",
-    },
-    cache: "no-store",
-  });
+  const response = await fetch(url.toString());
 
   if (!response.ok) {
     throw new Error(
@@ -167,12 +147,7 @@ export async function getAssetThreats(
     url.searchParams.append("riskLevel", riskLevel);
   }
 
-  const response = await fetch(url.toString(), {
-    headers: {
-      Accept: "application/json",
-    },
-    cache: "no-store",
-  });
+  const response = await fetch(url.toString());
 
   if (!response.ok) {
     throw new Error(
