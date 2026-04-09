@@ -1,203 +1,98 @@
 # Eclypsium Frontend Challenge
 
-Frontend solution for the Eclypsium Senior Software Engineer challenge.
+Security-oriented asset inventory UI built for fast reviewer evaluation.
 
----
+## 1) Quick Evaluation Path (3-5 minutes, no installation)
 
-## Reviewer Quick Start (No Setup Required)
+1. Open the deployed app: `https://asset-manager-ui-pi.vercel.app/`
+2. Validate list flow on `/`:
+   - Search by name/description.
+   - Toggle `With vulnerabilities` and `With threats`.
+   - Use advanced date filters and sort.
+   - Confirm pagination works.
+3. Open any asset:
+   - Confirm components are listed with risk chips.
+   - Check `Threats` and `Vulnerabilities` tabs.
+   - Apply severity/risk filters and use `Load more`.
+4. Trigger an invalid query or temporary network failure to verify retry/error states.
 
-- Open the deployed app: `https://asset-manager-ui-pi.vercel.app/`
-- Validate the core flow:
-    - Asset listing
-    - Navigation between assets
-    - Asset details and vulnerabilities
+Primary review path is the deployed app. Local setup is optional.
 
-- API data source: custom backend implementation (not the original mock backend)
+## 2) What is implemented (core + extras)
 
-> The deployed app is the primary review path. No local installation is required.
+Core:
+- Asset list with API-backed pagination.
+- Asset details route with component inventory.
+- Threat and vulnerability inventories per asset.
+- Filtering by search, finding type, date range, severity/risk level, and sort.
 
----
+Extras:
+- Risk summary cards (`Total Inventory`, `With Vulnerabilities`, `With Threats`) from `/assets/summary`.
+- URL-driven filter state for reproducible reviewer checks.
+- Risk-prioritized default inventory mode (`has_findings=true`) with dismiss action.
+- In-page jump from component risk chips to findings section.
+- Explicit loading, empty, error, and retry states across list/details/findings.
+- Runtime contract validation with Zod at API boundaries.
+- Unit tests for API/domain/feature behavior with Vitest + Testing Library.
 
-## Architecture Decision
+## 3) Requirement-to-implementation matrix
 
-The original challenge suggests consuming a provided mock backend.
+| Requirement | Implementation | Quick reviewer evidence |
+| --- | --- | --- |
+| List assets | `GET /assets` with paginated query state | Home page shows page controls and updates result set |
+| Filter inventory | Search, findings toggles, last scan date range, sort | URL query params update while filtering and list updates |
+| Inspect one asset | Dynamic route `/assets/[id]` + metadata + components | Click any asset card and verify breadcrumb + component accordion |
+| Review vulnerabilities | `GET /assets/:id/vulnerabilities` with severity filter and paging | Open Vulnerabilities tab, filter by severity, use `Load more` |
+| Review threats | `GET /assets/:id/threats` with risk-level filter and paging | Open Threats tab, filter by risk level, use `Load more` |
+| Evaluate risk posture quickly | `/assets/summary` cards + risk chips on assets/components | Summary cards and badges are visible on list/details |
+| Trust runtime correctness | Zod response parsing in API layer | Invalid payloads fail at boundary instead of silently rendering |
 
-This project intentionally uses a **custom backend implementation**, developed as part of a related backend challenge.
+## 4) Architecture and key decisions
 
-This decision was made to work with a more realistic and complete API, enabling better alignment between frontend behavior and real-world use cases.
+- Stack: Next.js App Router + React 19 + React Query + Zod + Tailwind.
+- Data flow:
+  - API calls in `src/api/*`.
+  - Runtime validation and domain schemas in `src/domain/*`.
+  - Query hooks and UI orchestration in `src/features/assets/*`.
+- Decision: this frontend intentionally uses a custom backend and does **not** adapt to the challenge mock backend.
+- Rationale: the custom backend is the contract source of truth used across frontend behavior, validation, and review.
 
----
+## 5) Optional local run path (minimal)
 
-## Backend Source of Truth
-
-The frontend consumes a custom backend, which is considered the source of truth for:
-
-- data models
-- API contracts
-- domain behavior
-
-- Backend repository: https://github.com/gustavorohrer/asset-manager
-- Hosted backend: https://asset-manager-production-ddd8.up.railway.app
-- OpenAPI contract: https://github.com/gustavorohrer/asset-manager/blob/main/docs/openapi/openapi.yaml
-
----
-
-## Challenge Scope (Frontend)
-
-Core requirements and features implemented:
-
-- **Asset Listing**: Full list of assets with pagination support (via API).
-- **Advanced Filtering**: Search by name/description and toggle filters for assets with vulnerabilities or threats.
-- **Asset Details**: Dedicated view for each asset (dynamic routing).
-- **Component Inventory**: Visibility of internal components for each asset.
-- **Vulnerability Inventory**: Real vulnerabilities shown in Asset Details, grouped by component and sorted by severity.
-- **Risk Visibility**: Clear badges for assets and components with security signals.
-- **Strategic Focus**: The application is designed as a **Security Risk Management Dashboard**. The priority is placed on **advanced visualization, multi-layered filtering, and scalability** (server-side operations) to help users prioritize and mitigate vulnerabilities and threats effectively. Pure CRUD operations for asset inventory are intentionally out of scope to maintain focus on security analysis and risk posture.
-- **UX Excellence**:
-    - Breadcrumbs for easy navigation.
-    - Intra-page navigation: Click a vulnerability's component to jump to its details.
-    - Performance-first loading with custom Skeletons.
-    - Error handling with "Retry" functionality for API failures.
-
----
-
-## API Endpoints Used
-
-Core read endpoints:
-
-- `GET /assets`
-- `GET /assets/:id`
-- `GET /assets/:id/vulnerabilities`
-
-Additional endpoints are documented in the backend OpenAPI specification.
-
----
-
-## Backend Performance Tradeoff (Reviewer Note)
-
-- `GET /assets` now includes aggregated `vulnerabilityCounts` and `threatCounts` per asset to support meaningful risk badges without frontend N+1 requests.
-- The current backend SQL favors correctness and challenge scope clarity: latest-scan semantics per component, no overcount between vulnerabilities and threats, and contract-first payloads.
-- For larger production datasets, the planned optimization is a `paged_assets` strategy (paginate IDs first, aggregate counts only for the current page) while preserving the same API contract.
-- Integration tests were added in the backend to protect aggregation correctness (including anti-overcount scenarios).
-
----
-
-## Local Setup (Optional)
-
-### Prerequisites
-
-- Node.js
-- pnpm
-
-### Run locally
-
-1. Install dependencies:
-   ```bash
-   pnpm install
-   ```
-
-2. Start the frontend:
-   ```bash
-   pnpm dev
-   ```
-
-### API base URL configuration
-
-Create a local environment file from the example:
+Prerequisites: Node.js 20+, pnpm.
 
 ```bash
+pnpm install
 cp .env.example .env.local
+pnpm dev
 ```
 
-By default, this points to:
+App: `http://localhost:3000`
 
-```
-https://asset-manager-production-ddd8.up.railway.app
-```
-
-To switch backend environments (for example, staging), update `NEXT_PUBLIC_API_BASE_URL` in `.env.local`.
-
-3. The app is preconfigured to use the public backend:
-   ```
-   https://asset-manager-production-ddd8.up.railway.app
-   ```
-
-### Quality checks
-
-Run the frontend quality baseline with Biome:
+Default API base URL in `.env.example`:
 
 ```bash
-pnpm lint
-pnpm lint:fix
-pnpm format
-pnpm check
+NEXT_PUBLIC_API_BASE_URL=https://asset-manager-production-ddd8.up.railway.app
 ```
 
-### Unit testing baseline
+## 6) Quality and validation commands
 
-This project uses a lightweight unit-testing baseline designed for low maintenance cost:
-
-- `Vitest` runner
-- `React Testing Library` for component-level unit tests when behavior is non-trivial
-- `jsdom` test environment
-
-Commands:
+Required gate:
 
 ```bash
-pnpm test
-pnpm test:watch
+pnpm check && pnpm test && pnpm build
 ```
 
-Test location convention:
+## 7) Known trade-offs / out of scope
 
-- Keep unit tests close to the code under test using `*.test.ts` / `*.test.tsx`.
-- Prioritize pure logic and transformations (e.g., filtering, parsing, derived state).
-- Avoid adding tests for trivial presentation-only components.
+- No create/update/delete asset workflows; this submission focuses on read and risk triage.
+- No auth/role model; assumes trusted reviewer context.
+- No E2E suite in this repository; coverage is unit/component-focused.
+- Backend contract is the custom backend contract; challenge mock backend compatibility is intentionally out of scope.
 
-For release/PR confidence, also run:
+## 8) Links needed by reviewer
 
-```bash
-pnpm build
-```
-
-### CI/CD baseline (challenge)
-
-This repository uses a basic CI/CD setup suitable for challenge scope:
-
-- CI: GitHub Actions workflow in `.github/workflows/ci.yml`
-- Triggers: `pull_request` to `main` and `push` to `main`
-- Runtime: Node.js `20` + pnpm `8`
-- Required checks:
-    - `pnpm install --frozen-lockfile`
-    - `pnpm check`
-    - `pnpm test`
-    - `pnpm build`
-
-Deployments are managed by Vercel:
-
-- Preview deploys for Pull Requests
-- Production deploys from `main`
-- `NEXT_PUBLIC_API_BASE_URL` is kept consistent across Preview and Production
-
----
-
-## Engineering Approach
-
-- Prioritized clarity and reviewer experience over feature count
-- Built incrementally with small, atomic changes
-- Focused on production-like structure and maintainability
-- Used AI as a tool with strict rules and validation, not as a decision-maker
-
----
-
-## Notes for Reviewers
-
-- The original mock backend is not used in this implementation, as the project relies on a custom backend aligned with the same domain.
-- No Docker or mock setup is required.
-- The deployed version is the recommended way to evaluate the project.
-
----
-
-## Support
-
-If anything is unclear during evaluation, feel free to open an issue in this repository.
+- Deployed app: `https://asset-manager-ui-pi.vercel.app/`
+- Hosted backend: `https://asset-manager-production-ddd8.up.railway.app`
+- Backend repository: `https://github.com/gustavorohrer/asset-manager`
+- OpenAPI contract: `https://github.com/gustavorohrer/asset-manager/blob/main/docs/openapi/openapi.yaml`
