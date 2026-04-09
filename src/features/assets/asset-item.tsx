@@ -7,11 +7,23 @@ type AssetItemProps = {
 };
 
 export function AssetItem({ asset }: AssetItemProps) {
-  const vulnerabilityHighCount = asset.vulnerabilityCounts.high;
-  const vulnerabilityMediumCount = asset.vulnerabilityCounts.medium;
+  const vulnerabilityCounts = asset.vulnerabilityCounts ?? {
+    high: 0,
+    medium: 0,
+    total: 0,
+  };
+  const threatCounts = asset.threatCounts ?? {
+    high: 0,
+    medium: 0,
+    low: 0,
+    total: 0,
+  };
+
+  const vulnerabilityHighCount = vulnerabilityCounts.high;
+  const vulnerabilityMediumCount = vulnerabilityCounts.medium;
   const vulnerabilityOtherCount = Math.max(
     0,
-    asset.vulnerabilityCounts.total -
+    vulnerabilityCounts.total -
       vulnerabilityHighCount -
       vulnerabilityMediumCount,
   );
@@ -20,9 +32,9 @@ export function AssetItem({ asset }: AssetItemProps) {
     vulnerabilityMediumCount > 0 ||
     vulnerabilityOtherCount > 0;
 
-  const threatHighCount = asset.threatCounts.high;
-  const threatMediumCount = asset.threatCounts.medium;
-  const threatLowCount = asset.threatCounts.low;
+  const threatHighCount = threatCounts.high;
+  const threatMediumCount = threatCounts.medium;
+  const threatLowCount = threatCounts.low;
   const hasThreatBadges =
     threatHighCount > 0 || threatMediumCount > 0 || threatLowCount > 0;
 
