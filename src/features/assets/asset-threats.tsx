@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  AlertCircle,
-  ArrowUpRight,
-  Filter,
-  RefreshCcw,
-  ShieldAlert,
-} from "lucide-react";
+import { AlertCircle, ArrowUpRight, Filter, RefreshCcw } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import type { AssetThreat, RiskLevel } from "@/domain/threats";
@@ -198,12 +192,6 @@ export function AssetThreats({ assetId }: { assetId: string }) {
                             >
                               {threat.riskLevel}
                             </span>
-                            {threat.riskLevel === "HIGH" && (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-[#e84749] px-2 py-0.5 text-[10px] font-bold text-white uppercase">
-                                <ShieldAlert className="size-3" />
-                                High risk
-                              </span>
-                            )}
                             <span className="text-[10px] font-bold text-muted-foreground uppercase bg-muted px-2 py-0.5 rounded-md">
                               {threat.type}
                             </span>

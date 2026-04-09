@@ -116,6 +116,22 @@ export function AssetDetails({ id }: AssetDetailsProps) {
           {(asset.hasVulnerabilities || asset.hasThreats) && (
             <fieldset className="flex flex-wrap gap-2">
               <legend className="sr-only">Risk indicators</legend>
+              {asset.hasThreats && (
+                <span
+                  className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold"
+                  style={{
+                    color: "#e84749",
+                    borderColor: "#e84749",
+                    backgroundColor: "rgb(232 71 73 / 0.1)",
+                  }}
+                >
+                  <span
+                    className="h-2 w-2 rounded-full bg-current"
+                    aria-hidden="true"
+                  />
+                  Threats detected
+                </span>
+              )}
               {asset.hasVulnerabilities && (
                 <span
                   className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold"
@@ -130,22 +146,6 @@ export function AssetDetails({ id }: AssetDetailsProps) {
                     aria-hidden="true"
                   />
                   Vulnerabilities detected
-                </span>
-              )}
-              {asset.hasThreats && (
-                <span
-                  className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold"
-                  style={{
-                    color: "#d89614",
-                    borderColor: "#d89614",
-                    backgroundColor: "rgb(216 150 20 / 0.1)",
-                  }}
-                >
-                  <span
-                    className="h-2 w-2 rounded-full bg-current"
-                    aria-hidden="true"
-                  />
-                  Threats detected
                 </span>
               )}
             </fieldset>
