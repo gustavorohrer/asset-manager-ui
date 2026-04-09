@@ -105,6 +105,35 @@ describe("AssetItem", () => {
     expect(screen.queryByText("Low:")).not.toBeInTheDocument();
   });
 
+  it("renders fallback badges when legacy payload does not include any counters", () => {
+    const {
+      threatCounts: _ignoredThreatCounts,
+      vulnerabilityCounts: _ignoredVulnerabilityCounts,
+      ...legacyAsset
+    } = baseAsset;
+
+    render(
+      <AssetItem
+        asset={
+          {
+            ...legacyAsset,
+            hasThreats: true,
+            hasVulnerabilities: true,
+          } as unknown as typeof baseAsset
+        }
+      />,
+    );
+
+    expect(screen.getByText("Threats")).toBeInTheDocument();
+    expect(screen.getByText("Threats detected")).toBeInTheDocument();
+    expect(screen.getByText("Vulnerabilities")).toBeInTheDocument();
+    expect(screen.getByText("Vulnerabilities detected")).toBeInTheDocument();
+    expect(screen.queryByText("High:")).not.toBeInTheDocument();
+    expect(screen.queryByText("Med:")).not.toBeInTheDocument();
+    expect(screen.queryByText("Low:")).not.toBeInTheDocument();
+    expect(screen.queryByText("Other:")).not.toBeInTheDocument();
+  });
+
   it("does not render risk indicators when asset has no risks", () => {
     render(<AssetItem asset={baseAsset} />);
 
