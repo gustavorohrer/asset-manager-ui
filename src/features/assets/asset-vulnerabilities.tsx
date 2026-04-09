@@ -7,6 +7,10 @@ import type {
   AssetVulnerability,
   VulnerabilitySeverity,
 } from "@/domain/vulnerabilities";
+import {
+  getVulnerabilityChipStyle,
+  getVulnerabilityFilterActiveStyle,
+} from "@/features/assets/finding-colors";
 import { cn } from "@/lib/utils";
 import { AssetVulnerabilitiesSkeleton } from "./asset-vulnerabilities-skeleton";
 import { formatAssetDate } from "./format-asset-date";
@@ -25,13 +29,6 @@ const SEVERITY_ORDER: Record<VulnerabilitySeverity, number> = {
   HIGH: 1,
   MEDIUM: 2,
   LOW: 3,
-};
-
-const SEVERITY_COLORS: Record<VulnerabilitySeverity, string> = {
-  CRITICAL: "#e84749",
-  HIGH: "#f56a00",
-  MEDIUM: "#d89614",
-  LOW: "#595959",
 };
 
 export function AssetVulnerabilities({ assetId }: { assetId: string }) {
@@ -102,10 +99,7 @@ export function AssetVulnerabilities({ assetId }: { assetId: string }) {
               )}
               style={
                 currentSeverity === severity && severity !== "ALL"
-                  ? {
-                      backgroundColor: SEVERITY_COLORS[severity],
-                      color: "white",
-                    }
+                  ? getVulnerabilityFilterActiveStyle(severity)
                   : {}
               }
             >
@@ -198,11 +192,7 @@ export function AssetVulnerabilities({ assetId }: { assetId: string }) {
                         <div className="flex items-center justify-between gap-4">
                           <span
                             className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase"
-                            style={{
-                              color: SEVERITY_COLORS[vuln.severity],
-                              borderColor: SEVERITY_COLORS[vuln.severity],
-                              backgroundColor: `${SEVERITY_COLORS[vuln.severity]}1A`,
-                            }}
+                            style={getVulnerabilityChipStyle(vuln.severity)}
                           >
                             {vuln.severity}
                           </span>

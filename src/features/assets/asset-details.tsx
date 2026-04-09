@@ -22,8 +22,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AssetDetailsSkeleton } from "@/features/assets/asset-details-skeleton";
 import { AssetThreats } from "@/features/assets/asset-threats";
 import { AssetVulnerabilities } from "@/features/assets/asset-vulnerabilities";
+import {
+  getFindingTabStyle,
+  THREAT_CHIP_STYLE,
+  THREAT_COLOR,
+  VULNERABILITY_CHIP_STYLE,
+  VULNERABILITY_COLOR,
+} from "@/features/assets/finding-colors";
 import { formatAssetDate } from "@/features/assets/format-asset-date";
 import { useAssetQuery } from "@/features/assets/use-asset-query";
+import { useAssetThreatsQuery } from "@/features/assets/use-asset-threats-query";
+import { useAssetVulnerabilitiesQuery } from "@/features/assets/use-asset-vulnerabilities-query";
 import { cn } from "@/lib/utils";
 
 type AssetDetailsProps = {
@@ -31,20 +40,28 @@ type AssetDetailsProps = {
 };
 
 const COMPONENT_COLLAPSE_THRESHOLD = 6;
+const FINDINGS_SECTION_ID = "asset-findings-section";
+type FindingsTab = "threats" | "vulnerabilities";
+const FINDINGS_TAB_CLASSNAME =
+  "gap-2 border-b-2 transition-[border-color,box-shadow,background-color] duration-150";
 
 export function AssetDetails({ id }: AssetDetailsProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { data: asset, isLoading, error, refetch } = useAssetQuery(id);
+  const { data: threatsSummaryData } = useAssetThreatsQuery(id);
+  const { data: vulnerabilitiesSummaryData } = useAssetVulnerabilitiesQuery(id);
 
-  const currentTab = searchParams.get("tab") || "threats";
+  const currentTab: FindingsTab =
+    searchParams.get("tab") === "vulnerabilities"
+      ? "vulnerabilities"
+      : "threats";
 
-  const handleTabChange = (value: string) => {
+  const handleTabChange = (value: FindingsTab) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", value);
 
-    // Limpiar filtros específicos de la pestaña anterior para evitar confusión
     if (value === "threats") {
       params.delete("severity");
     } else if (value === "vulnerabilities") {
@@ -52,6 +69,23 @@ export function AssetDetails({ id }: AssetDetailsProps) {
     }
 
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  const handleFindingsChipClick = (targetTab: FindingsTab) => {
+    if (targetTab !== currentTab) {
+      handleTabChange(targetTab);
+    }
+
+    const scheduleScroll =
+      typeof window !== "undefined" && window.requestAnimationFrame
+        ? window.requestAnimationFrame
+        : (callback: FrameRequestCallback) => callback(0);
+
+    scheduleScroll(() => {
+      document
+        .getElementById(FINDINGS_SECTION_ID)
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   };
 
   if (isLoading) {
@@ -86,6 +120,33 @@ export function AssetDetails({ id }: AssetDetailsProps) {
   const defaultOpenComponentIds = shouldCollapseComponentsByDefault
     ? []
     : asset.components.map((component) => component.id);
+  const threatTotalsByComponent = new Map<string, number>();
+  for (const page of threatsSummaryData?.pages ?? []) {
+    for (const threat of page.data) {
+      threatTotalsByComponent.set(
+        threat.componentId,
+        (threatTotalsByComponent.get(threat.componentId) ?? 0) + 1,
+      );
+    }
+  }
+  const vulnerabilityTotalsByComponent = new Map<string, number>();
+  for (const page of vulnerabilitiesSummaryData?.pages ?? []) {
+    for (const vulnerability of page.data) {
+      vulnerabilityTotalsByComponent.set(
+        vulnerability.componentId,
+        (vulnerabilityTotalsByComponent.get(vulnerability.componentId) ?? 0) +
+          1,
+      );
+    }
+  }
+  const totalThreats =
+    threatsSummaryData?.pages[0]?.pagination.total ??
+    asset.threatCounts?.total ??
+    0;
+  const totalVulnerabilities =
+    vulnerabilitiesSummaryData?.pages[0]?.pagination.total ??
+    asset.vulnerabilityCounts?.total ??
+    0;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -119,32 +180,16 @@ export function AssetDetails({ id }: AssetDetailsProps) {
               {asset.hasThreats && (
                 <span
                   className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold"
-                  style={{
-                    color: "#e84749",
-                    borderColor: "#e84749",
-                    backgroundColor: "rgb(232 71 73 / 0.1)",
-                  }}
+                  style={THREAT_CHIP_STYLE}
                 >
-                  <span
-                    className="h-2 w-2 rounded-full bg-current"
-                    aria-hidden="true"
-                  />
                   Threats detected
                 </span>
               )}
               {asset.hasVulnerabilities && (
                 <span
                   className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold"
-                  style={{
-                    color: "#d89614",
-                    borderColor: "#d89614",
-                    backgroundColor: "rgb(216 150 20 / 0.1)",
-                  }}
+                  style={VULNERABILITY_CHIP_STYLE}
                 >
-                  <span
-                    className="h-2 w-2 rounded-full bg-current"
-                    aria-hidden="true"
-                  />
                   Vulnerabilities detected
                 </span>
               )}
@@ -197,61 +242,122 @@ export function AssetDetails({ id }: AssetDetailsProps) {
                     value={component.id}
                     className="rounded-lg border border-border/70 bg-background/30 px-4 transition-colors hover:border-primary/40"
                   >
-                    <AccordionHeader>
-                      <AccordionTrigger className="py-3">
-                        <div className="min-w-0 flex-1">
-                          <span className="block truncate font-semibold text-foreground">
-                            {component.name}
-                          </span>
-                          <p className="mt-0.5 text-xs text-muted-foreground">
-                            {component.vendor} • Version {component.version}
-                          </p>
-                        </div>
-                        <span className="inline-flex items-center gap-2 text-[10px] uppercase font-bold text-muted-foreground/70 bg-muted/30 px-1.5 py-0.5 rounded">
-                          {component.type}
-                          <ChevronDown
-                            className="size-3.5 transition-transform group-aria-expanded:rotate-180"
-                            aria-hidden="true"
-                          />
-                        </span>
-                      </AccordionTrigger>
-                    </AccordionHeader>
-                    <AccordionContent className="pb-4">
-                      <dl className="grid gap-3 border-t border-border/40 pt-4 text-xs sm:grid-cols-2">
-                        <div className="rounded-md bg-background/60 p-2.5">
-                          <dt className="text-muted-foreground uppercase tracking-wide text-[10px]">
-                            Vendor
-                          </dt>
-                          <dd className="mt-1 text-foreground font-medium">
-                            {component.vendor}
-                          </dd>
-                        </div>
-                        <div className="rounded-md bg-background/60 p-2.5">
-                          <dt className="text-muted-foreground uppercase tracking-wide text-[10px]">
-                            Version
-                          </dt>
-                          <dd className="mt-1 text-foreground font-medium">
-                            {component.version}
-                          </dd>
-                        </div>
-                        <div className="rounded-md bg-background/60 p-2.5">
-                          <dt className="text-muted-foreground uppercase tracking-wide text-[10px]">
-                            First Seen
-                          </dt>
-                          <dd className="mt-1 text-foreground font-medium">
-                            {formatAssetDate(component.createdAt)}
-                          </dd>
-                        </div>
-                        <div className="rounded-md bg-background/60 p-2.5">
-                          <dt className="text-muted-foreground uppercase tracking-wide text-[10px]">
-                            Last Scan
-                          </dt>
-                          <dd className="mt-1 text-foreground font-medium">
-                            {formatAssetDate(component.lastScan)}
-                          </dd>
-                        </div>
-                      </dl>
-                    </AccordionContent>
+                    {(() => {
+                      const componentThreatCount =
+                        component.threatCounts?.total ??
+                        threatTotalsByComponent.get(component.id) ??
+                        0;
+                      const componentVulnerabilityCount =
+                        component.vulnerabilityCounts?.total ??
+                        vulnerabilityTotalsByComponent.get(component.id) ??
+                        0;
+                      const hasThreats =
+                        component.hasThreats ?? componentThreatCount > 0;
+                      const hasVulnerabilities =
+                        component.hasVulnerabilities ??
+                        componentVulnerabilityCount > 0;
+                      const isHealthy = !hasThreats && !hasVulnerabilities;
+
+                      return (
+                        <>
+                          <AccordionHeader className="flex flex-wrap items-center gap-2 py-3">
+                            <AccordionTrigger className="min-w-0 flex-1 gap-2 py-0 justify-start">
+                              <div className="min-w-0 flex-1">
+                                <span className="block truncate font-semibold text-foreground">
+                                  {component.name}
+                                </span>
+                                <p className="mt-0.5 text-xs text-muted-foreground">
+                                  {component.vendor} • Version{" "}
+                                  {component.version}
+                                </p>
+                              </div>
+                              <ChevronDown
+                                className="size-3.5 shrink-0 text-muted-foreground transition-transform group-aria-expanded:rotate-180"
+                                aria-hidden="true"
+                              />
+                            </AccordionTrigger>
+
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              {hasThreats && (
+                                <button
+                                  type="button"
+                                  title="Go to Threats details below"
+                                  onClick={() =>
+                                    handleFindingsChipClick("threats")
+                                  }
+                                  className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold transition-colors hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                  style={THREAT_CHIP_STYLE}
+                                >
+                                  Threats {componentThreatCount}
+                                </button>
+                              )}
+                              {hasVulnerabilities && (
+                                <button
+                                  type="button"
+                                  title="Go to Vulnerabilities details below"
+                                  onClick={() =>
+                                    handleFindingsChipClick("vulnerabilities")
+                                  }
+                                  className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold transition-colors hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                  style={VULNERABILITY_CHIP_STYLE}
+                                >
+                                  Vulnerabilities {componentVulnerabilityCount}
+                                </button>
+                              )}
+                              {isHealthy && (
+                                <button
+                                  type="button"
+                                  title="No threats or vulnerabilities found for this component in the latest scan"
+                                  className="inline-flex cursor-help items-center rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                >
+                                  Healthy
+                                </button>
+                              )}
+                              <span className="inline-flex items-center gap-2 rounded bg-muted/30 px-1.5 py-0.5 text-[10px] font-bold uppercase text-muted-foreground/70">
+                                {component.type}
+                              </span>
+                            </div>
+                          </AccordionHeader>
+
+                          <AccordionContent className="pb-4">
+                            <dl className="grid gap-3 border-t border-border/40 pt-4 text-xs sm:grid-cols-2">
+                              <div className="rounded-md bg-background/60 p-2.5">
+                                <dt className="text-muted-foreground uppercase tracking-wide text-[10px]">
+                                  Vendor
+                                </dt>
+                                <dd className="mt-1 text-foreground font-medium">
+                                  {component.vendor}
+                                </dd>
+                              </div>
+                              <div className="rounded-md bg-background/60 p-2.5">
+                                <dt className="text-muted-foreground uppercase tracking-wide text-[10px]">
+                                  Version
+                                </dt>
+                                <dd className="mt-1 text-foreground font-medium">
+                                  {component.version}
+                                </dd>
+                              </div>
+                              <div className="rounded-md bg-background/60 p-2.5">
+                                <dt className="text-muted-foreground uppercase tracking-wide text-[10px]">
+                                  First Seen
+                                </dt>
+                                <dd className="mt-1 text-foreground font-medium">
+                                  {formatAssetDate(component.createdAt)}
+                                </dd>
+                              </div>
+                              <div className="rounded-md bg-background/60 p-2.5">
+                                <dt className="text-muted-foreground uppercase tracking-wide text-[10px]">
+                                  Last Scan
+                                </dt>
+                                <dd className="mt-1 text-foreground font-medium">
+                                  {formatAssetDate(component.lastScan)}
+                                </dd>
+                              </div>
+                            </dl>
+                          </AccordionContent>
+                        </>
+                      );
+                    })()}
                   </AccordionItem>
                 ))}
               </Accordion>
@@ -259,21 +365,38 @@ export function AssetDetails({ id }: AssetDetailsProps) {
           )}
         </section>
 
-        <div className="pt-6 border-t border-border/40">
+        <div
+          id={FINDINGS_SECTION_ID}
+          className="pt-6 border-t border-border/40 scroll-mt-24"
+        >
           <Tabs
             defaultValue="threats"
             value={currentTab}
-            onValueChange={handleTabChange}
+            onValueChange={(value) => handleTabChange(value as FindingsTab)}
             className="w-full"
           >
             <TabsList>
-              <TabsTrigger value="threats" className="gap-2">
+              <TabsTrigger
+                value="threats"
+                className={FINDINGS_TAB_CLASSNAME}
+                style={getFindingTabStyle(
+                  currentTab === "threats",
+                  THREAT_COLOR,
+                )}
+              >
                 <ShieldAlert className="size-3.5" />
-                Threats
+                Threats ({totalThreats})
               </TabsTrigger>
-              <TabsTrigger value="vulnerabilities" className="gap-2">
+              <TabsTrigger
+                value="vulnerabilities"
+                className={FINDINGS_TAB_CLASSNAME}
+                style={getFindingTabStyle(
+                  currentTab === "vulnerabilities",
+                  VULNERABILITY_COLOR,
+                )}
+              >
                 <Bug className="size-3.5" />
-                Vulnerabilities
+                Vulnerabilities ({totalVulnerabilities})
               </TabsTrigger>
             </TabsList>
             <TabsContent value="threats" className="mt-6">

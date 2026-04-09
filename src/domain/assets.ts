@@ -47,10 +47,16 @@ export const assetComponentSchema = z.object({
   createdAt: z.string().datetime(),
   lastScan: z.string().datetime().nullable(),
   assetId: z.string(),
+  hasVulnerabilities: z.boolean().optional(),
+  hasThreats: z.boolean().optional(),
+  vulnerabilityCounts: vulnerabilityCountsSchema.optional(),
+  threatCounts: threatCountsSchema.optional(),
 });
 
 export const assetDetailsSchema = assetBaseSchema.extend({
   components: z.array(assetComponentSchema),
+  vulnerabilityCounts: vulnerabilityCountsSchema.optional(),
+  threatCounts: threatCountsSchema.optional(),
 });
 
 export const listAssetsResponseSchema = z.object({

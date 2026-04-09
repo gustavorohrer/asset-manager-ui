@@ -33,6 +33,19 @@ const mockAsset = {
       createdAt: "2024-01-01T00:00:00Z",
       lastScan: "2024-01-02T00:00:00Z",
       assetId: "1",
+      hasThreats: true,
+      hasVulnerabilities: true,
+      threatCounts: {
+        high: 1,
+        medium: 0,
+        low: 0,
+        total: 1,
+      },
+      vulnerabilityCounts: {
+        high: 1,
+        medium: 0,
+        total: 1,
+      },
     },
   ],
 };
@@ -65,7 +78,9 @@ describe("AssetDetails", () => {
 
     vi.mocked(useAssetVulnerabilitiesQuery).mockReturnValue({
       isLoading: false,
-      data: { pages: [{ data: [], pagination: { total: 0 } }] },
+      data: {
+        pages: [{ data: [], pagination: { page: 1, pageSize: 10, total: 3 } }],
+      },
       isError: false,
       hasNextPage: false,
       fetchNextPage: vi.fn(),
@@ -75,7 +90,9 @@ describe("AssetDetails", () => {
 
     vi.mocked(useAssetThreatsQuery).mockReturnValue({
       isLoading: false,
-      data: { pages: [{ data: [], pagination: { total: 0 } }] },
+      data: {
+        pages: [{ data: [], pagination: { page: 1, pageSize: 10, total: 2 } }],
+      },
       isError: false,
       hasNextPage: false,
       fetchNextPage: vi.fn(),
@@ -135,11 +152,19 @@ describe("AssetDetails", () => {
     expect(screen.queryByText("Compromised")).not.toBeInTheDocument();
     expect(screen.getByText("Comp 1")).toBeInTheDocument();
     expect(screen.getByText("Vendor 1 • Version 1.0")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Threats 1" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Vulnerabilities 1" }),
+    ).toBeInTheDocument();
 
     // Verify tabs
-    expect(screen.getByRole("tab", { name: /Threats/i })).toBeInTheDocument();
     expect(
-      screen.getByRole("tab", { name: /Vulnerabilities/i }),
+      screen.getByRole("tab", { name: "Threats (2)" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: "Vulnerabilities (3)" }),
     ).toBeInTheDocument();
   });
 
@@ -221,5 +246,66 @@ describe("AssetDetails", () => {
     expect(push).toHaveBeenCalledWith("/assets/1?tab=threats", {
       scroll: false,
     });
+  });
+
+  it("navigates to threats tab from component chip", () => {
+    const push = vi.fn();
+    vi.mocked(useRouter).mockReturnValue({ push } as unknown as ReturnType<
+      typeof useRouter
+    >);
+    vi.mocked(useSearchParams).mockReturnValue(
+      new URLSearchParams(
+        "tab=vulnerabilities&severity=critical",
+      ) as unknown as ReturnType<typeof useSearchParams>,
+    );
+    vi.mocked(useAssetQuery).mockReturnValue({
+      data: mockAsset,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    } as ReturnType<typeof useAssetQuery>);
+
+    render(<AssetDetails id="1" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Threats 1" }));
+
+    expect(push).toHaveBeenCalledWith("/assets/1?tab=threats", {
+      scroll: false,
+    });
+  });
+
+  it("renders healthy chip when component has no findings", () => {
+    vi.mocked(useAssetQuery).mockReturnValue({
+      data: {
+        ...mockAsset,
+        hasThreats: false,
+        hasVulnerabilities: false,
+        components: [
+          {
+            ...mockAsset.components[0],
+            hasThreats: false,
+            hasVulnerabilities: false,
+            threatCounts: {
+              high: 0,
+              medium: 0,
+              low: 0,
+              total: 0,
+            },
+            vulnerabilityCounts: {
+              high: 0,
+              medium: 0,
+              total: 0,
+            },
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    } as ReturnType<typeof useAssetQuery>);
+
+    render(<AssetDetails id="1" />);
+
+    expect(screen.getByRole("button", { name: "Healthy" })).toBeInTheDocument();
   });
 });

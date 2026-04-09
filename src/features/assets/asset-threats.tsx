@@ -4,6 +4,10 @@ import { AlertCircle, ArrowUpRight, Filter, RefreshCcw } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import type { AssetThreat, RiskLevel } from "@/domain/threats";
+import {
+  getThreatChipStyle,
+  getThreatFilterActiveStyle,
+} from "@/features/assets/finding-colors";
 import { cn } from "@/lib/utils";
 import { AssetVulnerabilitiesSkeleton } from "./asset-vulnerabilities-skeleton";
 import { formatAssetDate } from "./format-asset-date";
@@ -15,12 +19,6 @@ const RISK_ORDER: Record<RiskLevel, number> = {
   HIGH: 0,
   MEDIUM: 1,
   LOW: 2,
-};
-
-const RISK_COLORS: Record<RiskLevel, string> = {
-  HIGH: "#e84749",
-  MEDIUM: "#d89614",
-  LOW: "#595959",
 };
 
 export function AssetThreats({ assetId }: { assetId: string }) {
@@ -87,10 +85,7 @@ export function AssetThreats({ assetId }: { assetId: string }) {
               )}
               style={
                 currentRiskLevel === level && level !== "ALL"
-                  ? {
-                      backgroundColor: RISK_COLORS[level],
-                      color: "white",
-                    }
+                  ? getThreatFilterActiveStyle(level)
                   : {}
               }
             >
@@ -184,11 +179,7 @@ export function AssetThreats({ assetId }: { assetId: string }) {
                           <div className="flex items-center gap-2">
                             <span
                               className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase"
-                              style={{
-                                color: RISK_COLORS[threat.riskLevel],
-                                borderColor: RISK_COLORS[threat.riskLevel],
-                                backgroundColor: `${RISK_COLORS[threat.riskLevel]}1A`,
-                              }}
+                              style={getThreatChipStyle(threat.riskLevel)}
                             >
                               {threat.riskLevel}
                             </span>

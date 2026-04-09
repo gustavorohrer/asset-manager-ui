@@ -1,5 +1,11 @@
 import Link from "next/link";
 import type { Asset } from "@/domain/assets";
+import {
+  getThreatChipStyle,
+  getVulnerabilityChipStyle,
+  THREAT_CHIP_STYLE,
+  VULNERABILITY_CHIP_STYLE,
+} from "@/features/assets/finding-colors";
 import { formatAssetDate } from "@/features/assets/format-asset-date";
 
 type AssetItemProps = {
@@ -66,48 +72,24 @@ export function AssetItem({ asset }: AssetItemProps) {
                     {threatHighCount > 0 && (
                       <span
                         className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
-                        style={{
-                          color: "#e84749",
-                          borderColor: "#e84749",
-                          backgroundColor: "rgb(232 71 73 / 0.1)",
-                        }}
+                        style={THREAT_CHIP_STYLE}
                       >
-                        <span
-                          className="h-1.5 w-1.5 rounded-full bg-current"
-                          aria-hidden="true"
-                        />
                         High: {threatHighCount}
                       </span>
                     )}
                     {threatMediumCount > 0 && (
                       <span
                         className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
-                        style={{
-                          color: "#d89614",
-                          borderColor: "#d89614",
-                          backgroundColor: "rgb(216 150 20 / 0.1)",
-                        }}
+                        style={getThreatChipStyle("MEDIUM")}
                       >
-                        <span
-                          className="h-1.5 w-1.5 rounded-full bg-current"
-                          aria-hidden="true"
-                        />
                         Med: {threatMediumCount}
                       </span>
                     )}
                     {threatLowCount > 0 && (
                       <span
                         className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
-                        style={{
-                          color: "#595959",
-                          borderColor: "#595959",
-                          backgroundColor: "rgb(89 89 89 / 0.1)",
-                        }}
+                        style={getThreatChipStyle("LOW")}
                       >
-                        <span
-                          className="h-1.5 w-1.5 rounded-full bg-current"
-                          aria-hidden="true"
-                        />
                         Low: {threatLowCount}
                       </span>
                     )}
@@ -115,16 +97,8 @@ export function AssetItem({ asset }: AssetItemProps) {
                 ) : (
                   <span
                     className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
-                    style={{
-                      color: "#d89614",
-                      borderColor: "#d89614",
-                      backgroundColor: "rgb(216 150 20 / 0.1)",
-                    }}
+                    style={THREAT_CHIP_STYLE}
                   >
-                    <span
-                      className="h-1.5 w-1.5 rounded-full bg-current"
-                      aria-hidden="true"
-                    />
                     Threats detected
                   </span>
                 )}
@@ -141,48 +115,24 @@ export function AssetItem({ asset }: AssetItemProps) {
                     {vulnerabilityHighCount > 0 && (
                       <span
                         className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
-                        style={{
-                          color: "#f56a00",
-                          borderColor: "#f56a00",
-                          backgroundColor: "rgb(245 106 0 / 0.1)",
-                        }}
+                        style={getVulnerabilityChipStyle("HIGH")}
                       >
-                        <span
-                          className="h-1.5 w-1.5 rounded-full bg-current"
-                          aria-hidden="true"
-                        />
                         High: {vulnerabilityHighCount}
                       </span>
                     )}
                     {vulnerabilityMediumCount > 0 && (
                       <span
                         className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
-                        style={{
-                          color: "#d89614",
-                          borderColor: "#d89614",
-                          backgroundColor: "rgb(216 150 20 / 0.1)",
-                        }}
+                        style={VULNERABILITY_CHIP_STYLE}
                       >
-                        <span
-                          className="h-1.5 w-1.5 rounded-full bg-current"
-                          aria-hidden="true"
-                        />
                         Med: {vulnerabilityMediumCount}
                       </span>
                     )}
                     {vulnerabilityOtherCount > 0 && (
                       <span
                         className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
-                        style={{
-                          color: "#595959",
-                          borderColor: "#595959",
-                          backgroundColor: "rgb(89 89 89 / 0.1)",
-                        }}
+                        style={getVulnerabilityChipStyle("LOW")}
                       >
-                        <span
-                          className="h-1.5 w-1.5 rounded-full bg-current"
-                          aria-hidden="true"
-                        />
                         Other: {vulnerabilityOtherCount}
                       </span>
                     )}
@@ -190,16 +140,8 @@ export function AssetItem({ asset }: AssetItemProps) {
                 ) : (
                   <span
                     className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
-                    style={{
-                      color: "#d89614",
-                      borderColor: "#d89614",
-                      backgroundColor: "rgb(216 150 20 / 0.1)",
-                    }}
+                    style={VULNERABILITY_CHIP_STYLE}
                   >
-                    <span
-                      className="h-1.5 w-1.5 rounded-full bg-current"
-                      aria-hidden="true"
-                    />
                     Vulnerabilities detected
                   </span>
                 )}
