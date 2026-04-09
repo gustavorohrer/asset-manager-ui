@@ -12,6 +12,7 @@ export function assetsQueryKey(
   lastScanTo?: string,
   hasVulnerabilities?: boolean,
   hasThreats?: boolean,
+  hasFindings?: boolean,
 ) {
   return [
     "assets",
@@ -23,6 +24,7 @@ export function assetsQueryKey(
       lastScanTo,
       hasVulnerabilities,
       hasThreats,
+      hasFindings,
     },
   ] as const;
 }
@@ -35,6 +37,7 @@ export function useAssetsQuery(
   lastScanTo?: string,
   hasVulnerabilities?: boolean,
   hasThreats?: boolean,
+  hasFindings?: boolean,
 ) {
   return useInfiniteQuery({
     queryKey: assetsQueryKey(
@@ -45,6 +48,7 @@ export function useAssetsQuery(
       lastScanTo,
       hasVulnerabilities,
       hasThreats,
+      hasFindings,
     ),
     queryFn: ({ pageParam }) =>
       getAssets(
@@ -57,6 +61,7 @@ export function useAssetsQuery(
         lastScanTo,
         hasVulnerabilities,
         hasThreats,
+        hasFindings,
       ),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {

@@ -2,29 +2,51 @@
 
 import { Calendar, ChevronDown, Filter, Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import type { AssetSortBy, AssetSortOrder } from "@/domain/assets";
 import { AssetList } from "@/features/assets/asset-list";
+import {
+  type AssetStatsFilter,
+  AssetsStatsCards,
+} from "@/features/assets/assets-stats-cards";
 import { useAssetsQuery } from "@/features/assets/use-assets-query";
+import { useAssetsSummaryQuery } from "@/features/assets/use-assets-summary-query";
+
+const RISK_PRIORITY_DISMISSED_SESSION_KEY = "assets-risk-priority-dismissed";
 
 export function AssetsList() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("q") ?? "";
-  const withVulnerabilities = searchParams.get("vuln") === "1";
-  const withThreats = searchParams.get("threat") === "1";
+  const withVulnerabilities =
+    searchParams.get("vuln") === "1" ? true : undefined;
+  const withThreats = searchParams.get("threat") === "1" ? true : undefined;
+  const hasFindings = searchParams.get("findings") === "1" ? true : undefined;
   const sortBy =
     (searchParams.get("sortBy") as AssetSortBy | null) ?? "createdAt";
   const sortOrder =
     (searchParams.get("sortOrder") as AssetSortOrder | null) ?? "desc";
   const lastScanFrom = searchParams.get("lastScanFrom") ?? "";
   const lastScanTo = searchParams.get("lastScanTo") ?? "";
+  const [hasDismissedRiskPriority, setHasDismissedRiskPriority] =
+    useState(false);
+  const [didLoadRiskPriorityPreference, setDidLoadRiskPriorityPreference] =
+    useState(false);
+  const hasAutoRiskPriorityCheckRun = useRef(false);
 
   const [localLastScanFrom, setLocalLastScanFrom] = useState(lastScanFrom);
   const [localLastScanTo, setLocalLastScanTo] = useState(lastScanTo);
+
+  useEffect(() => {
+    const storedValue = window.sessionStorage.getItem(
+      RISK_PRIORITY_DISMISSED_SESSION_KEY,
+    );
+    setHasDismissedRiskPriority(storedValue === "1");
+    setDidLoadRiskPriorityPreference(true);
+  }, []);
 
   useEffect(() => {
     setLocalLastScanFrom(lastScanFrom);
@@ -52,94 +74,212 @@ export function AssetsList() {
     lastScanTo ? `${lastScanTo}T23:59:59Z` : undefined,
     withVulnerabilities,
     withThreats,
+    hasFindings,
   );
+
+  const {
+    data: summary,
+    isLoading: isSummaryLoading,
+    isError: isSummaryError,
+    refetch: refetchSummary,
+  } = useAssetsSummaryQuery();
 
   const filteredAssets = data?.pages.flatMap((page) => page.data) ?? [];
 
-  const hasActiveFilters = Boolean(
+  const hasActiveExclusionFilters = Boolean(
     searchQuery ||
       withVulnerabilities ||
       withThreats ||
+      hasFindings ||
       lastScanFrom ||
-      lastScanTo ||
-      sortBy !== "createdAt" ||
-      sortOrder !== "desc",
+      lastScanTo,
   );
 
-  const updateFilters = (nextValues: {
-    query?: string;
-    withVulnerabilities?: boolean;
-    withThreats?: boolean;
-    sortBy?: AssetSortBy;
-    sortOrder?: AssetSortOrder;
-    lastScanFrom?: string;
-    lastScanTo?: string;
-  }) => {
-    const params = new URLSearchParams(searchParams.toString());
-    const nextQuery = nextValues.query ?? searchQuery;
-    const nextWithVulnerabilities =
-      nextValues.withVulnerabilities ?? withVulnerabilities;
-    const nextWithThreats = nextValues.withThreats ?? withThreats;
-    const nextSortBy = nextValues.sortBy ?? sortBy;
-    const nextSortOrder = nextValues.sortOrder ?? sortOrder;
-    const nextLastScanFrom =
-      nextValues.lastScanFrom !== undefined
-        ? nextValues.lastScanFrom
-        : lastScanFrom;
-    const nextLastScanTo =
-      nextValues.lastScanTo !== undefined ? nextValues.lastScanTo : lastScanTo;
+  const hasActiveFilters = Boolean(
+    hasActiveExclusionFilters || sortBy !== "createdAt" || sortOrder !== "desc",
+  );
 
-    if (nextQuery.trim()) {
-      params.set("q", nextQuery);
-    } else {
-      params.delete("q");
-    }
+  const updateFilters = useCallback(
+    (nextValues: {
+      query?: string;
+      withVulnerabilities?: boolean;
+      withThreats?: boolean;
+      hasFindings?: boolean;
+      sortBy?: AssetSortBy;
+      sortOrder?: AssetSortOrder;
+      lastScanFrom?: string;
+      lastScanTo?: string;
+    }) => {
+      const params = new URLSearchParams(searchParams.toString());
+      const nextQuery = nextValues.query ?? searchQuery;
+      const nextWithVulnerabilities =
+        nextValues.withVulnerabilities ?? withVulnerabilities;
+      const nextWithThreats = nextValues.withThreats ?? withThreats;
+      const nextHasFindings = nextValues.hasFindings ?? hasFindings;
+      const nextSortBy = nextValues.sortBy ?? sortBy;
+      const nextSortOrder = nextValues.sortOrder ?? sortOrder;
+      const nextLastScanFrom =
+        nextValues.lastScanFrom !== undefined
+          ? nextValues.lastScanFrom
+          : lastScanFrom;
+      const nextLastScanTo =
+        nextValues.lastScanTo !== undefined
+          ? nextValues.lastScanTo
+          : lastScanTo;
 
-    if (nextWithVulnerabilities) {
-      params.set("vuln", "1");
-    } else {
-      params.delete("vuln");
-    }
+      if (nextQuery.trim()) {
+        params.set("q", nextQuery);
+      } else {
+        params.delete("q");
+      }
 
-    if (nextWithThreats) {
-      params.set("threat", "1");
-    } else {
-      params.delete("threat");
-    }
+      if (nextHasFindings) {
+        params.set("findings", "1");
+        params.delete("vuln");
+        params.delete("threat");
+      } else {
+        params.delete("findings");
 
-    if (nextSortBy !== "createdAt" || nextSortOrder !== "desc") {
-      params.set("sortBy", nextSortBy);
-      params.set("sortOrder", nextSortOrder);
-    } else {
-      params.delete("sortBy");
-      params.delete("sortOrder");
-    }
+        if (nextWithVulnerabilities) {
+          params.set("vuln", "1");
+        } else {
+          params.delete("vuln");
+        }
 
-    if (nextLastScanFrom) {
-      params.set("lastScanFrom", nextLastScanFrom);
-    } else {
-      params.delete("lastScanFrom");
-    }
+        if (nextWithThreats) {
+          params.set("threat", "1");
+        } else {
+          params.delete("threat");
+        }
+      }
 
-    if (nextLastScanTo) {
-      params.set("lastScanTo", nextLastScanTo);
-    } else {
-      params.delete("lastScanTo");
-    }
+      if (nextSortBy !== "createdAt" || nextSortOrder !== "desc") {
+        params.set("sortBy", nextSortBy);
+        params.set("sortOrder", nextSortOrder);
+      } else {
+        params.delete("sortBy");
+        params.delete("sortOrder");
+      }
 
-    const nextQueryString = params.toString();
-    router.replace(
-      nextQueryString ? `${pathname}?${nextQueryString}` : pathname,
-      {
-        scroll: false,
-      },
-    );
-  };
+      if (nextLastScanFrom) {
+        params.set("lastScanFrom", nextLastScanFrom);
+      } else {
+        params.delete("lastScanFrom");
+      }
+
+      if (nextLastScanTo) {
+        params.set("lastScanTo", nextLastScanTo);
+      } else {
+        params.delete("lastScanTo");
+      }
+
+      const nextQueryString = params.toString();
+      router.replace(
+        nextQueryString ? `${pathname}?${nextQueryString}` : pathname,
+        {
+          scroll: false,
+        },
+      );
+    },
+    [
+      hasFindings,
+      lastScanFrom,
+      lastScanTo,
+      pathname,
+      router,
+      searchParams,
+      searchQuery,
+      sortBy,
+      sortOrder,
+      withThreats,
+      withVulnerabilities,
+    ],
+  );
 
   const isDateRangeInvalid =
     localLastScanFrom && localLastScanTo && localLastScanFrom > localLastScanTo;
 
   const hasAdvancedFiltersActive = Boolean(lastScanFrom || lastScanTo);
+  const hasRiskInInventory = Boolean(
+    summary && (summary.withVulnerabilities > 0 || summary.withThreats > 0),
+  );
+
+  useEffect(() => {
+    if (
+      !didLoadRiskPriorityPreference ||
+      hasAutoRiskPriorityCheckRun.current ||
+      isSummaryLoading ||
+      isSummaryError ||
+      !summary
+    ) {
+      return;
+    }
+
+    hasAutoRiskPriorityCheckRun.current = true;
+
+    if (
+      hasDismissedRiskPriority ||
+      hasActiveExclusionFilters ||
+      !hasRiskInInventory
+    ) {
+      return;
+    }
+
+    updateFilters({
+      withVulnerabilities: false,
+      withThreats: false,
+      hasFindings: true,
+    });
+  }, [
+    didLoadRiskPriorityPreference,
+    hasDismissedRiskPriority,
+    hasActiveExclusionFilters,
+    hasRiskInInventory,
+    isSummaryLoading,
+    isSummaryError,
+    summary,
+    updateFilters,
+  ]);
+
+  const activeStatsFilter: AssetStatsFilter | null = hasFindings
+    ? null
+    : withVulnerabilities && withThreats
+      ? null
+      : withVulnerabilities
+        ? "vulnerabilities"
+        : withThreats
+          ? "threats"
+          : "all";
+
+  const handleStatsFilterChange = (filter: AssetStatsFilter) => {
+    if (filter === "all") {
+      updateFilters({
+        query: "",
+        withVulnerabilities: false,
+        withThreats: false,
+        hasFindings: false,
+        lastScanFrom: "",
+        lastScanTo: "",
+      });
+      return;
+    }
+
+    updateFilters({
+      withVulnerabilities: filter === "vulnerabilities",
+      withThreats: filter === "threats",
+      hasFindings: false,
+    });
+  };
+
+  const clearRiskPriority = () => {
+    window.sessionStorage.setItem(RISK_PRIORITY_DISMISSED_SESSION_KEY, "1");
+    setHasDismissedRiskPriority(true);
+    updateFilters({
+      withVulnerabilities: false,
+      withThreats: false,
+      hasFindings: false,
+    });
+  };
 
   return (
     <section className="space-y-6 rounded-xl border border-border/70 bg-card/40 p-5 sm:p-6">
@@ -149,6 +289,34 @@ export function AssetsList() {
           Review your assets and latest scan activity.
         </p>
       </header>
+
+      <AssetsStatsCards
+        summary={summary}
+        activeFilter={activeStatsFilter}
+        isLoading={isSummaryLoading}
+        isError={isSummaryError}
+        onFilterChange={handleStatsFilterChange}
+        onRetry={() => {
+          void refetchSummary();
+        }}
+      />
+
+      {hasFindings && (
+        <div className="flex flex-col gap-2 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-foreground">
+            You are viewing a risk-prioritized inventory (assets with
+            vulnerabilities or threats).
+          </p>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={clearRiskPriority}
+          >
+            View full inventory
+          </Button>
+        </div>
+      )}
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-6">
         <label
@@ -224,10 +392,11 @@ export function AssetsList() {
           size="sm"
           variant="outline"
           data-pressed={withVulnerabilities || undefined}
-          aria-pressed={withVulnerabilities}
+          aria-pressed={Boolean(withVulnerabilities)}
           onClick={() =>
             updateFilters({
               withVulnerabilities: !withVulnerabilities,
+              hasFindings: false,
             })
           }
           className="relative data-[pressed]:border-primary/60 data-[pressed]:bg-primary/10 data-[pressed]:text-primary"
@@ -242,10 +411,11 @@ export function AssetsList() {
           size="sm"
           variant="outline"
           data-pressed={withThreats || undefined}
-          aria-pressed={withThreats}
+          aria-pressed={Boolean(withThreats)}
           onClick={() =>
             updateFilters({
               withThreats: !withThreats,
+              hasFindings: false,
             })
           }
           className="relative data-[pressed]:border-primary/60 data-[pressed]:bg-primary/10 data-[pressed]:text-primary"
@@ -264,6 +434,7 @@ export function AssetsList() {
               query: "",
               withVulnerabilities: false,
               withThreats: false,
+              hasFindings: false,
               sortBy: "createdAt",
               sortOrder: "desc",
               lastScanFrom: "",

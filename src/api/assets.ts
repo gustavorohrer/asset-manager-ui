@@ -32,6 +32,7 @@ export async function getAssets(
   lastScanTo?: string,
   hasVulnerabilities?: boolean,
   hasThreats?: boolean,
+  hasFindings?: boolean,
 ): Promise<ListAssetsResponse> {
   const url = new URL(`${getApiBaseUrl()}/assets`);
   url.searchParams.append("page", page.toString());
@@ -66,6 +67,10 @@ export async function getAssets(
 
   if (hasThreats !== undefined) {
     url.searchParams.append("has_threats", hasThreats.toString());
+  }
+
+  if (hasFindings !== undefined) {
+    url.searchParams.append("has_findings", hasFindings.toString());
   }
 
   const response = await fetch(url.toString(), {
