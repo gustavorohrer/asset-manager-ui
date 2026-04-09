@@ -1,12 +1,15 @@
+import { ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function AssetDetailsSkeleton() {
   return (
     <div className="space-y-8">
-      {/* Breadcrumbs Skeleton */}
-      <nav className="flex items-center gap-2 text-sm" aria-hidden="true">
-        <Skeleton className="h-4 w-12" />
-        <span className="text-muted-foreground">/</span>
+      <nav
+        className="flex items-center gap-2 text-sm text-muted-foreground"
+        aria-hidden="true"
+      >
+        <span>Assets</span>
+        <ChevronRight className="size-3.5" aria-hidden="true" />
         <Skeleton className="h-4 w-24" />
       </nav>
 
