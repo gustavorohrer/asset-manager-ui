@@ -24,6 +24,8 @@ describe("AssetsStatsCards", () => {
     expect(screen.getByText("With Threats")).toBeInTheDocument();
     expect(screen.getByText("41")).toBeInTheDocument();
     expect(screen.getAllByText("26")).toHaveLength(2);
+    expect(document.querySelector(".lucide-bug")).toBeInTheDocument();
+    expect(document.querySelector(".lucide-shield-alert")).toBeInTheDocument();
   });
 
   it("reflects selected filter via aria-pressed", () => {

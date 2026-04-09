@@ -287,13 +287,13 @@ describe("AssetsList", () => {
     render(<AssetsList />);
 
     expect(
-      screen.getByRole("button", { name: /^Total Inventory\d+$/ }),
+      screen.getByRole("button", { name: /^Total Inventory\s*\d+$/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /^With Vulnerabilities\d+$/ }),
+      screen.getByRole("button", { name: /^With Vulnerabilities\s*\d+$/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /^With Threats\d+$/ }),
+      screen.getByRole("button", { name: /^With Threats\s*\d+$/i }),
     ).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
   });
@@ -308,12 +308,54 @@ describe("AssetsList", () => {
     });
   });
 
+  it("debounces search URL updates", () => {
+    vi.useFakeTimers();
+
+    try {
+      render(<AssetsList />);
+
+      const searchInput = screen.getByLabelText("Search");
+      fireEvent.change(searchInput, { target: { value: "g" } });
+      fireEvent.change(searchInput, { target: { value: "ga" } });
+      fireEvent.change(searchInput, { target: { value: "gat" } });
+
+      expect(replaceMock).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(299);
+      expect(replaceMock).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(1);
+      expect(replaceMock).toHaveBeenCalledTimes(1);
+      expect(replaceMock).toHaveBeenCalledWith("/assets?q=gat", {
+        scroll: false,
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("keeps local search text while focused even if URL updates lag behind", () => {
+    const { rerender } = render(<AssetsList />);
+
+    const searchInput = screen.getByLabelText("Search");
+    fireEvent.focus(searchInput);
+    fireEvent.change(searchInput, { target: { value: "gateway" } });
+    fireEvent.change(searchInput, { target: { value: "" } });
+
+    currentSearchParams = new URLSearchParams("q=gateway");
+    rerender(<AssetsList />);
+
+    expect(screen.getByLabelText("Search")).toHaveValue("");
+  });
+
   it("updates URL params when a stats card is clicked", () => {
     currentSearchParams = new URLSearchParams("q=gateway&vuln=1");
 
     render(<AssetsList />);
 
-    fireEvent.click(screen.getByRole("button", { name: /^With Threats\d+$/ }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /^With Threats\s*\d+$/i }),
+    );
 
     expect(replaceMock).toHaveBeenCalledWith("/assets?q=gateway&threat=1", {
       scroll: false,
@@ -328,7 +370,7 @@ describe("AssetsList", () => {
     render(<AssetsList />);
 
     fireEvent.click(
-      screen.getByRole("button", { name: /^Total Inventory\d+$/ }),
+      screen.getByRole("button", { name: /^Total Inventory\s*\d+$/i }),
     );
 
     expect(replaceMock).toHaveBeenCalledWith(
@@ -438,12 +480,11 @@ describe("AssetsList", () => {
     ).toBeInTheDocument();
   });
 
-  it("prevents manual keyboard input on date fields", () => {
+  it("does not block keyboard events on date fields", () => {
     render(<AssetsList />);
     fireEvent.click(screen.getByRole("button", { name: /Advanced Filters/i }));
 
     const fromInput = screen.getByLabelText(/Last scan from/i);
-
     const event = new KeyboardEvent("keydown", {
       key: "a",
       bubbles: true,
@@ -453,22 +494,35 @@ describe("AssetsList", () => {
 
     fireEvent(fromInput, event);
 
-    expect(preventDefaultSpy).toHaveBeenCalled();
+    expect(preventDefaultSpy).not.toHaveBeenCalled();
   });
 
-  it("calls showPicker on date fields when clicked", () => {
-    const showPickerMock = vi.fn();
-
+  it("exposes invalid date range message to assistive tech", () => {
     render(<AssetsList />);
     fireEvent.click(screen.getByRole("button", { name: /Advanced Filters/i }));
 
+    fireEvent.change(screen.getByLabelText(/Last scan from/i), {
+      target: { value: "2026-02-01" },
+    });
+    fireEvent.change(screen.getByLabelText(/Last scan to/i), {
+      target: { value: "2026-01-01" },
+    });
+
     const fromInput = screen.getByLabelText(/Last scan from/i);
-    // @ts-expect-error - JSDOM doesn't have showPicker
-    fromInput.showPicker = showPickerMock;
+    const toInput = screen.getByLabelText(/Last scan to/i);
+    const alert = screen.getByRole("alert");
 
-    fireEvent.click(fromInput);
-
-    expect(showPickerMock).toHaveBeenCalled();
+    expect(alert).toHaveTextContent('"From" date cannot be after "To" date.');
+    expect(fromInput).toHaveAttribute("aria-invalid", "true");
+    expect(toInput).toHaveAttribute("aria-invalid", "true");
+    expect(fromInput).toHaveAttribute(
+      "aria-describedby",
+      "assets-date-range-error",
+    );
+    expect(toInput).toHaveAttribute(
+      "aria-describedby",
+      "assets-date-range-error",
+    );
   });
 
   it("reads page param and sends it to assets page query hook", () => {
@@ -520,5 +574,27 @@ describe("AssetsList", () => {
     await waitFor(() => {
       expect(scrollIntoViewMock).toHaveBeenCalled();
     });
+  });
+
+  it("shows async status when list is refetching", () => {
+    useAssetsPageQueryMock.mockReturnValue({
+      data: {
+        data: assets,
+        pagination: {
+          page: 1,
+          pageSize: 20,
+          totalPages: 1,
+          total: assets.length,
+        },
+      },
+      error: null,
+      isLoading: false,
+      isFetching: true,
+      refetch: vi.fn(),
+    });
+
+    render(<AssetsList />);
+
+    expect(screen.getByText("Updating results...")).toBeInTheDocument();
   });
 });

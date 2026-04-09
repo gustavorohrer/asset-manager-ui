@@ -1,8 +1,14 @@
 "use client";
 
+import { Boxes, Bug, type LucideIcon, ShieldAlert } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { AssetRiskSummary } from "@/domain/assets";
+import {
+  getThreatColor,
+  getVulnerabilityColor,
+} from "@/features/assets/finding-colors";
 import { cn } from "@/lib/utils";
 
 export type AssetStatsFilter = "all" | "vulnerabilities" | "threats";
@@ -18,9 +24,16 @@ type AssetsStatsCardsProps = {
 
 type StatsCardConfig = {
   filter: AssetStatsFilter;
+  icon: LucideIcon;
   label: string;
   value: number;
 };
+
+const THREAT_STATS_COLOR = getThreatColor("HIGH");
+const VULNERABILITY_STATS_COLOR = getVulnerabilityColor("MEDIUM");
+
+const withAlpha = (hexColor: string, alphaSuffix: string): string =>
+  `${hexColor}${alphaSuffix}`;
 
 export function AssetsStatsCards({
   summary,
@@ -55,18 +68,21 @@ export function AssetsStatsCards({
   const cards: StatsCardConfig[] = [
     {
       filter: "all",
+      icon: Boxes,
       label: "Total Inventory",
       value: summary?.total ?? 0,
     },
     {
-      filter: "vulnerabilities",
-      label: "With Vulnerabilities",
-      value: summary?.withVulnerabilities ?? 0,
-    },
-    {
       filter: "threats",
+      icon: ShieldAlert,
       label: "With Threats",
       value: summary?.withThreats ?? 0,
+    },
+    {
+      filter: "vulnerabilities",
+      icon: Bug,
+      label: "With Vulnerabilities",
+      value: summary?.withVulnerabilities ?? 0,
     },
   ];
 
@@ -77,6 +93,19 @@ export function AssetsStatsCards({
     >
       {cards.map((card) => {
         const isActive = activeFilter === card.filter;
+        const accentColor =
+          card.filter === "vulnerabilities"
+            ? VULNERABILITY_STATS_COLOR
+            : card.filter === "threats"
+              ? THREAT_STATS_COLOR
+              : undefined;
+        const Icon = card.icon;
+        const accentCardStyle = accentColor
+          ? {
+              borderColor: withAlpha(accentColor, isActive ? "99" : "66"),
+              backgroundColor: withAlpha(accentColor, isActive ? "20" : "14"),
+            }
+          : undefined;
 
         return (
           <li key={card.filter}>
@@ -87,15 +116,33 @@ export function AssetsStatsCards({
               data-pressed={isActive || undefined}
               onClick={() => onFilterChange(card.filter)}
               className={cn(
-                "h-auto w-full items-start justify-start rounded-lg border px-4 py-3 text-left",
-                isActive && "border-primary/60 bg-primary/10 text-primary",
+                "h-auto w-full justify-start rounded-lg border px-4 py-3 text-left",
+                !accentColor &&
+                  isActive &&
+                  "border-primary/60 bg-primary/10",
               )}
+              style={accentCardStyle}
             >
-              <span className="text-[11px] font-medium text-muted-foreground">
-                {card.label}
-              </span>
-              <span className="text-2xl font-semibold tabular-nums">
-                {card.value.toLocaleString("en-US")}
+              <span className="flex w-full items-center justify-between gap-3">
+                <span
+                  className="inline-flex items-center gap-1.5 text-[11px] font-medium"
+                  style={
+                    accentColor
+                      ? { color: accentColor }
+                      : { color: "var(--muted-foreground)" }
+                  }
+                >
+                  <Icon className="size-3.5 shrink-0" />
+                  {card.label}
+                </span>
+                <span
+                  className="text-2xl font-semibold leading-none tabular-nums"
+                  style={
+                    accentColor ? { color: accentColor } : { color: "inherit" }
+                  }
+                >
+                  {card.value.toLocaleString("en-US")}
+                </span>
               </span>
             </Button>
           </li>

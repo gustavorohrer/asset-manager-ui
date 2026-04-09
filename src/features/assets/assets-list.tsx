@@ -15,6 +15,7 @@ import { useAssetsPageQuery } from "@/features/assets/use-assets-query";
 import { useAssetsSummaryQuery } from "@/features/assets/use-assets-summary-query";
 
 const RISK_PRIORITY_DISMISSED_SESSION_KEY = "assets-risk-priority-dismissed";
+const SEARCH_DEBOUNCE_MS = 300;
 
 export function AssetsList() {
   const router = useRouter();
@@ -39,6 +40,8 @@ export function AssetsList() {
   const [didLoadRiskPriorityPreference, setDidLoadRiskPriorityPreference] =
     useState(false);
   const hasAutoRiskPriorityCheckRun = useRef(false);
+  const [isSearchInputFocused, setIsSearchInputFocused] = useState(false);
+  const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
 
   const [localLastScanFrom, setLocalLastScanFrom] = useState(lastScanFrom);
   const [localLastScanTo, setLocalLastScanTo] = useState(lastScanTo);
@@ -55,6 +58,14 @@ export function AssetsList() {
     setLocalLastScanFrom(lastScanFrom);
     setLocalLastScanTo(lastScanTo);
   }, [lastScanFrom, lastScanTo]);
+
+  useEffect(() => {
+    if (isSearchInputFocused) {
+      return;
+    }
+
+    setLocalSearchQuery(searchQuery);
+  }, [isSearchInputFocused, searchQuery]);
 
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(
     Boolean(lastScanFrom || lastScanTo),
@@ -75,12 +86,22 @@ export function AssetsList() {
   const {
     data: summary,
     isLoading: isSummaryLoading,
+    isFetching: isSummaryFetching,
     isError: isSummaryError,
     refetch: refetchSummary,
   } = useAssetsSummaryQuery();
 
   const filteredAssets = data?.data ?? [];
   const pagination = data?.pagination;
+  const isAssetsUpdating = isFetching && !isLoading;
+  const isSummaryUpdating = isSummaryFetching && !isSummaryLoading;
+  const asyncStatusMessage = isLoading
+    ? "Loading assets."
+    : isAssetsUpdating
+      ? "Updating results..."
+      : isSummaryUpdating
+        ? "Updating risk summary..."
+        : null;
 
   const hasActiveExclusionFilters = Boolean(
     searchQuery ||
@@ -205,8 +226,26 @@ export function AssetsList() {
     ],
   );
 
-  const isDateRangeInvalid =
-    localLastScanFrom && localLastScanTo && localLastScanFrom > localLastScanTo;
+  useEffect(() => {
+    if (localSearchQuery === searchQuery) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      updateFilters({
+        query: localSearchQuery,
+      });
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [localSearchQuery, searchQuery, updateFilters]);
+
+  const isDateRangeInvalid = Boolean(
+    localLastScanFrom && localLastScanTo && localLastScanFrom > localLastScanTo,
+  );
+  const dateRangeErrorId = "assets-date-range-error";
 
   const hasAdvancedFiltersActive = Boolean(lastScanFrom || lastScanTo);
   const hasRiskInInventory = Boolean(
@@ -341,6 +380,7 @@ export function AssetsList() {
   return (
     <section
       ref={assetsSectionRef}
+      aria-busy={isLoading || isAssetsUpdating || isSummaryLoading}
       className="space-y-6 rounded-xl border border-border/70 bg-card/40 p-5 sm:p-6"
     >
       <header className="space-y-1">
@@ -360,6 +400,16 @@ export function AssetsList() {
           void refetchSummary();
         }}
       />
+
+      {asyncStatusMessage && (
+        <p
+          role="status"
+          aria-live="polite"
+          className={isLoading ? "sr-only" : "text-xs text-muted-foreground"}
+        >
+          {asyncStatusMessage}
+        </p>
+      )}
 
       {hasFindings && (
         <div className="flex flex-col gap-2 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
@@ -389,14 +439,14 @@ export function AssetsList() {
             <input
               id="assets-search"
               type="text"
-              value={searchQuery}
-              onChange={(event) =>
-                updateFilters({
-                  query: event.target.value,
-                })
-              }
+              value={localSearchQuery}
+              onFocus={() => setIsSearchInputFocused(true)}
+              onBlur={() => setIsSearchInputFocused(false)}
+              onChange={(event) => {
+                setLocalSearchQuery(event.target.value);
+              }}
               placeholder="Search by name or description"
-              className={`h-10 w-full rounded-md border border-border/70 bg-background/80 pl-10 pr-3 text-sm text-foreground outline-none transition-all focus:border-primary ${searchQuery ? "border-primary/60 bg-primary/5 shadow-sm shadow-primary/10" : ""}`}
+              className={`h-10 w-full rounded-md border border-border/70 bg-background/80 pl-10 pr-3 text-sm text-foreground outline-none transition-all focus:border-primary ${localSearchQuery ? "border-primary/60 bg-primary/5 shadow-sm shadow-primary/10" : ""}`}
             />
           </div>
         </label>
@@ -515,12 +565,16 @@ export function AssetsList() {
               Last scan from
             </span>
             <input
+              id="assets-last-scan-from"
               type="date"
               value={localLastScanFrom}
-              onKeyDown={(e) => e.preventDefault()}
-              onClick={(e) => e.currentTarget.showPicker()}
               onChange={(e) => setLocalLastScanFrom(e.target.value)}
-              className={`h-10 rounded-md border border-border/70 bg-background/80 px-3 text-sm text-foreground outline-none transition-all focus:border-primary ${localLastScanFrom ? "border-primary/60 bg-primary/5" : ""}`}
+              max={localLastScanTo || undefined}
+              aria-invalid={isDateRangeInvalid}
+              aria-describedby={
+                isDateRangeInvalid ? dateRangeErrorId : undefined
+              }
+              className={`date-input h-10 rounded-md border border-border/70 bg-background/80 px-3 text-sm text-foreground outline-none transition-all focus:border-primary ${localLastScanFrom ? "border-primary/60 bg-primary/5" : ""}`}
             />
           </label>
           <label className="flex flex-col gap-2 text-sm text-muted-foreground">
@@ -529,12 +583,16 @@ export function AssetsList() {
               Last scan to
             </span>
             <input
+              id="assets-last-scan-to"
               type="date"
               value={localLastScanTo}
-              onKeyDown={(e) => e.preventDefault()}
-              onClick={(e) => e.currentTarget.showPicker()}
               onChange={(e) => setLocalLastScanTo(e.target.value)}
-              className={`h-10 rounded-md border border-border/70 bg-background/80 px-3 text-sm text-foreground outline-none transition-all focus:border-primary ${localLastScanTo ? "border-primary/60 bg-primary/5" : ""} ${isDateRangeInvalid ? "border-red-500/50 bg-red-500/5" : ""}`}
+              min={localLastScanFrom || undefined}
+              aria-invalid={isDateRangeInvalid}
+              aria-describedby={
+                isDateRangeInvalid ? dateRangeErrorId : undefined
+              }
+              className={`date-input h-10 rounded-md border border-border/70 bg-background/80 px-3 text-sm text-foreground outline-none transition-all focus:border-primary ${localLastScanTo ? "border-primary/60 bg-primary/5" : ""} ${isDateRangeInvalid ? "border-red-500/50 bg-red-500/5" : ""}`}
             />
           </label>
           <div className="flex flex-col justify-end gap-2 sm:col-span-2 lg:col-span-2 lg:flex-row lg:items-end">
@@ -557,9 +615,13 @@ export function AssetsList() {
               Apply
             </Button>
             {isDateRangeInvalid && (
-              <div className="flex items-center text-xs text-red-500/80">
+              <p
+                id={dateRangeErrorId}
+                role="alert"
+                className="flex items-center text-xs text-red-500/80"
+              >
                 "From" date cannot be after "To" date.
-              </div>
+              </p>
             )}
           </div>
         </div>

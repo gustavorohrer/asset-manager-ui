@@ -128,3 +128,21 @@
     @apply font-sans;
   }
 }
+
+input[type="date"].date-input {
+  color-scheme: light;
+}
+
+input[type="date"].date-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 1;
+}
+
+.dark input[type="date"].date-input {
+  color-scheme: dark;
+}
+
+.dark input[type="date"].date-input::-webkit-calendar-picker-indicator {
+  filter: invert(96%) sepia(6%) saturate(209%) hue-rotate(177deg)
+    brightness(106%) contrast(95%);
+}
