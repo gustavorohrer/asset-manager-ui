@@ -73,6 +73,15 @@ Additional endpoints are documented in the backend OpenAPI specification.
 
 ---
 
+## Backend Performance Tradeoff (Reviewer Note)
+
+- `GET /assets` now includes aggregated `vulnerabilityCounts` and `threatCounts` per asset to support meaningful risk badges without frontend N+1 requests.
+- The current backend SQL favors correctness and challenge scope clarity: latest-scan semantics per component, no overcount between vulnerabilities and threats, and contract-first payloads.
+- For larger production datasets, the planned optimization is a `paged_assets` strategy (paginate IDs first, aggregate counts only for the current page) while preserving the same API contract.
+- Integration tests were added in the backend to protect aggregation correctness (including anti-overcount scenarios).
+
+---
+
 ## Local Setup (Optional)
 
 ### Prerequisites

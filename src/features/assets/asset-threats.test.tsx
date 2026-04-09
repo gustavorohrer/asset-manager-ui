@@ -111,8 +111,8 @@ describe("AssetThreats", () => {
     expect(listItems[0]).toHaveTextContent("Threat 1");
     expect(listItems[1]).toHaveTextContent("Threat 2");
 
-    // Check for "Compromised" badge on HIGH risk threat
-    expect(screen.getByText("Compromised")).toBeInTheDocument();
+    // Check for "High risk" badge on HIGH risk threat
+    expect(screen.getByText("High risk")).toBeInTheDocument();
     // Check for type
     expect(screen.getByText("Firmware Implant")).toBeInTheDocument();
   });

@@ -201,7 +201,7 @@ export function AssetThreats({ assetId }: { assetId: string }) {
                             {threat.riskLevel === "HIGH" && (
                               <span className="inline-flex items-center gap-1 rounded-full bg-[#e84749] px-2 py-0.5 text-[10px] font-bold text-white uppercase">
                                 <ShieldAlert className="size-3" />
-                                Compromised
+                                High risk
                               </span>
                             )}
                             <span className="text-[10px] font-bold text-muted-foreground uppercase bg-muted px-2 py-0.5 rounded-md">

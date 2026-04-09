@@ -7,6 +7,25 @@ type AssetItemProps = {
 };
 
 export function AssetItem({ asset }: AssetItemProps) {
+  const vulnerabilityHighCount = asset.vulnerabilityCounts.high;
+  const vulnerabilityMediumCount = asset.vulnerabilityCounts.medium;
+  const vulnerabilityOtherCount = Math.max(
+    0,
+    asset.vulnerabilityCounts.total -
+      vulnerabilityHighCount -
+      vulnerabilityMediumCount,
+  );
+  const hasVulnerabilityBadges =
+    vulnerabilityHighCount > 0 ||
+    vulnerabilityMediumCount > 0 ||
+    vulnerabilityOtherCount > 0;
+
+  const threatHighCount = asset.threatCounts.high;
+  const threatMediumCount = asset.threatCounts.medium;
+  const threatLowCount = asset.threatCounts.low;
+  const hasThreatBadges =
+    threatHighCount > 0 || threatMediumCount > 0 || threatLowCount > 0;
+
   return (
     <li className="group relative rounded-lg border border-border/70 bg-card/70 transition-all duration-200 hover:border-primary/50 hover:bg-card/90">
       <Link
@@ -23,40 +42,156 @@ export function AssetItem({ asset }: AssetItemProps) {
         </p>
 
         {(asset.hasVulnerabilities || asset.hasThreats) && (
-          <fieldset className="relative z-20 mt-3 flex flex-wrap gap-2 pointer-events-none">
+          <fieldset className="relative z-20 mt-3 flex flex-col gap-1.5 pointer-events-none">
             <legend className="sr-only">Risk indicators</legend>
-            {asset.hasVulnerabilities && (
-              <span
-                className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
-                style={{
-                  color: "#d89614",
-                  borderColor: "#d89614",
-                  backgroundColor: "rgb(216 150 20 / 0.1)",
-                }}
-              >
-                <span
-                  className="h-1.5 w-1.5 rounded-full bg-current"
-                  aria-hidden="true"
-                />
-                Vulnerabilities
-              </span>
+            {asset.hasThreats && (
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Threats
+                </span>
+                {hasThreatBadges ? (
+                  <>
+                    {threatHighCount > 0 && (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
+                        style={{
+                          color: "#e84749",
+                          borderColor: "#e84749",
+                          backgroundColor: "rgb(232 71 73 / 0.1)",
+                        }}
+                      >
+                        <span
+                          className="h-1.5 w-1.5 rounded-full bg-current"
+                          aria-hidden="true"
+                        />
+                        High: {threatHighCount}
+                      </span>
+                    )}
+                    {threatMediumCount > 0 && (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
+                        style={{
+                          color: "#d89614",
+                          borderColor: "#d89614",
+                          backgroundColor: "rgb(216 150 20 / 0.1)",
+                        }}
+                      >
+                        <span
+                          className="h-1.5 w-1.5 rounded-full bg-current"
+                          aria-hidden="true"
+                        />
+                        Med: {threatMediumCount}
+                      </span>
+                    )}
+                    {threatLowCount > 0 && (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
+                        style={{
+                          color: "#595959",
+                          borderColor: "#595959",
+                          backgroundColor: "rgb(89 89 89 / 0.1)",
+                        }}
+                      >
+                        <span
+                          className="h-1.5 w-1.5 rounded-full bg-current"
+                          aria-hidden="true"
+                        />
+                        Low: {threatLowCount}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
+                    style={{
+                      color: "#d89614",
+                      borderColor: "#d89614",
+                      backgroundColor: "rgb(216 150 20 / 0.1)",
+                    }}
+                  >
+                    <span
+                      className="h-1.5 w-1.5 rounded-full bg-current"
+                      aria-hidden="true"
+                    />
+                    Threats detected
+                  </span>
+                )}
+              </div>
             )}
 
-            {asset.hasThreats && (
-              <span
-                className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
-                style={{
-                  color: "#e84749",
-                  borderColor: "#e84749",
-                  backgroundColor: "rgb(232 71 73 / 0.1)",
-                }}
-              >
-                <span
-                  className="h-1.5 w-1.5 rounded-full bg-current"
-                  aria-hidden="true"
-                />
-                Compromised
-              </span>
+            {asset.hasVulnerabilities && (
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Vulnerabilities
+                </span>
+                {hasVulnerabilityBadges ? (
+                  <>
+                    {vulnerabilityHighCount > 0 && (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
+                        style={{
+                          color: "#f56a00",
+                          borderColor: "#f56a00",
+                          backgroundColor: "rgb(245 106 0 / 0.1)",
+                        }}
+                      >
+                        <span
+                          className="h-1.5 w-1.5 rounded-full bg-current"
+                          aria-hidden="true"
+                        />
+                        High: {vulnerabilityHighCount}
+                      </span>
+                    )}
+                    {vulnerabilityMediumCount > 0 && (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
+                        style={{
+                          color: "#d89614",
+                          borderColor: "#d89614",
+                          backgroundColor: "rgb(216 150 20 / 0.1)",
+                        }}
+                      >
+                        <span
+                          className="h-1.5 w-1.5 rounded-full bg-current"
+                          aria-hidden="true"
+                        />
+                        Med: {vulnerabilityMediumCount}
+                      </span>
+                    )}
+                    {vulnerabilityOtherCount > 0 && (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
+                        style={{
+                          color: "#595959",
+                          borderColor: "#595959",
+                          backgroundColor: "rgb(89 89 89 / 0.1)",
+                        }}
+                      >
+                        <span
+                          className="h-1.5 w-1.5 rounded-full bg-current"
+                          aria-hidden="true"
+                        />
+                        Other: {vulnerabilityOtherCount}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
+                    style={{
+                      color: "#d89614",
+                      borderColor: "#d89614",
+                      backgroundColor: "rgb(216 150 20 / 0.1)",
+                    }}
+                  >
+                    <span
+                      className="h-1.5 w-1.5 rounded-full bg-current"
+                      aria-hidden="true"
+                    />
+                    Vulnerabilities detected
+                  </span>
+                )}
+              </div>
             )}
           </fieldset>
         )}

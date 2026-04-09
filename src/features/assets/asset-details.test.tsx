@@ -22,7 +22,7 @@ const mockAsset = {
   createdAt: "2024-01-01T00:00:00Z",
   lastScan: "2024-01-02T00:00:00Z",
   hasVulnerabilities: true,
-  hasThreats: false,
+  hasThreats: true,
   components: [
     {
       id: "c1",
@@ -131,6 +131,8 @@ describe("AssetDetails", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(mockAsset.description)).toBeInTheDocument();
     expect(screen.getByText("Vulnerabilities detected")).toBeInTheDocument();
+    expect(screen.getByText("Threats detected")).toBeInTheDocument();
+    expect(screen.queryByText("Compromised")).not.toBeInTheDocument();
     expect(screen.getByText("Comp 1")).toBeInTheDocument();
     expect(screen.getByText("Vendor 1 • Version 1.0")).toBeInTheDocument();
 

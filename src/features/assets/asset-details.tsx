@@ -136,16 +136,16 @@ export function AssetDetails({ id }: AssetDetailsProps) {
                 <span
                   className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold"
                   style={{
-                    color: "#e84749",
-                    borderColor: "#e84749",
-                    backgroundColor: "rgb(232 71 73 / 0.1)",
+                    color: "#d89614",
+                    borderColor: "#d89614",
+                    backgroundColor: "rgb(216 150 20 / 0.1)",
                   }}
                 >
                   <span
                     className="h-2 w-2 rounded-full bg-current"
                     aria-hidden="true"
                   />
-                  Compromised
+                  Threats detected
                 </span>
               )}
             </fieldset>
