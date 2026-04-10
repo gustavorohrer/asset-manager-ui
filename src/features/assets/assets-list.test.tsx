@@ -173,6 +173,26 @@ describe("AssetsList", () => {
     );
   });
 
+  it("falls back to safe defaults when sort and page URL params are invalid", () => {
+    currentSearchParams = new URLSearchParams(
+      "sortBy=invalid-sort&sortOrder=invalid-order&page=not-a-number",
+    );
+
+    render(<AssetsList />);
+
+    expect(useAssetsPageQueryMock).toHaveBeenCalledWith(
+      1,
+      "",
+      "createdAt",
+      "desc",
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    );
+  });
+
   it("sends only selected risk flag to query hook", () => {
     currentSearchParams = new URLSearchParams("vuln=1");
     render(<AssetsList />);

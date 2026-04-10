@@ -3,7 +3,12 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 
-import type { AssetSortBy, AssetSortOrder } from "@/domain/assets";
+import {
+  type AssetSortBy,
+  type AssetSortOrder,
+  assetSortBySchema,
+  assetSortOrderSchema,
+} from "@/domain/assets";
 
 export type AssetsListFilterUpdates = {
   query?: string;
@@ -50,10 +55,8 @@ export function useAssetsListUrlFilters(): AssetsListUrlFilters {
     searchParams.get("vuln") === "1" ? true : undefined;
   const withThreats = searchParams.get("threat") === "1" ? true : undefined;
   const hasFindings = searchParams.get("findings") === "1" ? true : undefined;
-  const sortBy =
-    (searchParams.get("sortBy") as AssetSortBy | null) ?? "createdAt";
-  const sortOrder =
-    (searchParams.get("sortOrder") as AssetSortOrder | null) ?? "desc";
+  const sortBy = parseSortBy(searchParams.get("sortBy"));
+  const sortOrder = parseSortOrder(searchParams.get("sortOrder"));
   const lastScanFrom = searchParams.get("lastScanFrom") ?? "";
   const lastScanTo = searchParams.get("lastScanTo") ?? "";
   const page = parsePage(searchParams.get("page"));
@@ -196,4 +199,14 @@ function parsePage(rawPage: string | null): number {
   }
 
   return parsedPage;
+}
+
+function parseSortBy(rawSortBy: string | null): AssetSortBy {
+  const parsedSortBy = assetSortBySchema.safeParse(rawSortBy);
+  return parsedSortBy.success ? parsedSortBy.data : "createdAt";
+}
+
+function parseSortOrder(rawSortOrder: string | null): AssetSortOrder {
+  const parsedSortOrder = assetSortOrderSchema.safeParse(rawSortOrder);
+  return parsedSortOrder.success ? parsedSortOrder.data : "desc";
 }
