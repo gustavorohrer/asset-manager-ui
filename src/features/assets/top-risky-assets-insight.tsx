@@ -1,11 +1,25 @@
 import Link from "next/link";
 
 import type { Asset } from "@/domain/assets";
-import { getTopRiskyAssets } from "@/features/assets/get-top-risky-assets";
+import {
+  getTopRiskyAssets,
+  type RiskLevel,
+} from "@/features/assets/get-top-risky-assets";
 
 type TopRiskyAssetsInsightProps = {
   assets: Asset[];
 };
+
+function getRiskLevelBadgeClassName(riskLevel: RiskLevel): string {
+  switch (riskLevel) {
+    case "High":
+      return "border-red-700/40 bg-red-50 text-red-900 dark:border-red-400/40 dark:bg-red-950/40 dark:text-red-200";
+    case "Medium":
+      return "border-amber-700/40 bg-amber-50 text-amber-900 dark:border-amber-400/40 dark:bg-amber-950/40 dark:text-amber-200";
+    case "Low":
+      return "border-emerald-700/40 bg-emerald-50 text-emerald-900 dark:border-emerald-400/40 dark:bg-emerald-950/40 dark:text-emerald-200";
+  }
+}
 
 export function TopRiskyAssetsInsight({ assets }: TopRiskyAssetsInsightProps) {
   const topRiskyAssets = getTopRiskyAssets(assets);
@@ -37,11 +51,16 @@ export function TopRiskyAssetsInsight({ assets }: TopRiskyAssetsInsightProps) {
                 {asset.name}
               </Link>
               <p className="text-xs text-muted-foreground">
-                Risk score: {asset.riskScore}
+                Score {asset.riskScore}/100
               </p>
             </div>
 
             <div className="flex shrink-0 items-center gap-1.5 text-[10px]">
+              <span
+                className={`rounded-full border px-2 py-0.5 font-medium ${getRiskLevelBadgeClassName(asset.riskLevel)}`}
+              >
+                {asset.riskLevel}
+              </span>
               <span className="rounded-full border border-border px-2 py-0.5 text-muted-foreground">
                 Threats {asset.threatCount}
               </span>

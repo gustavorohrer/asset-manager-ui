@@ -60,6 +60,10 @@ describe("TopRiskyAssetsInsight", () => {
       "href",
       "/assets/a2",
     );
+    expect(screen.getByText("Score 100/100")).toBeInTheDocument();
+    expect(screen.getByText("Score 0/100")).toBeInTheDocument();
+    expect(screen.getByText("High")).toBeInTheDocument();
+    expect(screen.getByText("Low")).toBeInTheDocument();
   });
 
   it("does not render insight when fewer than two risky assets are present", () => {

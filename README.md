@@ -8,7 +8,7 @@ Security-focused asset inventory UI designed for fast risk triage review.
    - `https://asset-manager-ui-pi.vercel.app/?findings=1`
 2. On the home view, validate:
    - Risk summary cards with counts and percentages.
-   - `Top risky assets (current page)` insight (score-based top 3).
+   - `Top risky assets (current page)` insight (weighted + normalized top 3).
 3. Open a filtered inventory view:
    - `https://asset-manager-ui-pi.vercel.app/?q=nimble&threat=1&sortBy=lastScan&sortOrder=desc`
 4. Open a concrete asset detail:
@@ -38,7 +38,7 @@ Optional enhancements:
 - Threat and vulnerability analysis by asset.
 - Risk summary cards (`Total Inventory`, `With Threats`, `With Vulnerabilities`).
 - Percentage context on risk cards (e.g., `63% of total assets`).
-- `Top risky assets (current page)` insight (score-based, filter-aware).
+- `Top risky assets (current page)` insight (weighted + normalized, filter-aware).
 - URL-driven filter state for reproducible review steps.
 - Explicit loading, empty, error, and retry states.
 - Runtime contract validation with Zod at API boundaries.
