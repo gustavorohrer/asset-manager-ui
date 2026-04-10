@@ -23,10 +23,10 @@ describe("finding-colors", () => {
     );
   });
 
-  it("returns active filter styles with white text", () => {
+  it("returns active filter styles with contrast-aware text color", () => {
     expect(getThreatFilterActiveStyle("MEDIUM")).toEqual({
       backgroundColor: getThreatColor("MEDIUM"),
-      color: "#ffffff",
+      color: "#000000",
     });
 
     expect(getVulnerabilityFilterActiveStyle("LOW")).toEqual({
@@ -51,16 +51,16 @@ describe("finding-colors", () => {
 
   it("returns deterministic tab styles for active and inactive states", () => {
     expect(getFindingTabStyle(true, "#e84749")).toEqual({
-      color: "#e84749",
+      color: "#000000",
       borderBottomColor: "#e84749",
       borderBottomWidth: "3px",
       boxShadow: "inset 0 -1px 0 #e84749",
-      backgroundColor: "#e8474914",
+      backgroundColor: "#e84749",
       fontWeight: 600,
     });
 
     expect(getFindingTabStyle(false, "#e84749")).toEqual({
-      color: "#e84749",
+      color: "var(--muted-foreground)",
       borderBottomColor: "transparent",
       borderBottomWidth: "2px",
       boxShadow: "none",

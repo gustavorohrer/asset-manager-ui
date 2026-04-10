@@ -4,9 +4,8 @@ import type { VulnerabilitySeverity } from "@/domain/vulnerabilities";
 export type FindingSeverity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
 export type FindingState = "HEALTHY" | "UNKNOWN";
 
-const CHIP_ALPHA_SUFFIX = "1A";
-const TAB_ALPHA_SUFFIX = "14";
-const FILTER_ACTIVE_TEXT_COLOR = "#ffffff";
+const LIGHT_TEXT = "#ffffff";
+const DARK_TEXT = "#000000";
 
 const FINDING_SEVERITY_COLORS: Record<FindingSeverity, string> = {
   CRITICAL: "#e84749",
@@ -35,8 +34,46 @@ const FINDING_STATE_CHIP_STYLES = {
   }
 >;
 
-const withAlpha = (hexColor: string, alphaSuffix: string): string =>
-  `${hexColor}${alphaSuffix}`;
+const hexToRgb = (hexColor: string): [number, number, number] => {
+  const normalized = hexColor.replace("#", "");
+  const red = Number.parseInt(normalized.slice(0, 2), 16);
+  const green = Number.parseInt(normalized.slice(2, 4), 16);
+  const blue = Number.parseInt(normalized.slice(4, 6), 16);
+  return [red, green, blue];
+};
+
+const srgbToLinear = (value: number): number => {
+  const normalized = value / 255;
+  return normalized <= 0.04045
+    ? normalized / 12.92
+    : ((normalized + 0.055) / 1.055) ** 2.4;
+};
+
+const getRelativeLuminance = (hexColor: string): number => {
+  const [red, green, blue] = hexToRgb(hexColor);
+  const linearRed = srgbToLinear(red);
+  const linearGreen = srgbToLinear(green);
+  const linearBlue = srgbToLinear(blue);
+
+  return 0.2126 * linearRed + 0.7152 * linearGreen + 0.0722 * linearBlue;
+};
+
+const getContrastRatio = (
+  backgroundColor: string,
+  textColor: string,
+): number => {
+  const backgroundLuminance = getRelativeLuminance(backgroundColor);
+  const textLuminance = getRelativeLuminance(textColor);
+  const lighter = Math.max(backgroundLuminance, textLuminance);
+  const darker = Math.min(backgroundLuminance, textLuminance);
+  return (lighter + 0.05) / (darker + 0.05);
+};
+
+const getReadableTextColor = (backgroundColor: string): string => {
+  const contrastWithLight = getContrastRatio(backgroundColor, LIGHT_TEXT);
+  const contrastWithDark = getContrastRatio(backgroundColor, DARK_TEXT);
+  return contrastWithDark >= contrastWithLight ? DARK_TEXT : LIGHT_TEXT;
+};
 
 export const mapRiskLevelToSeverity = (
   riskLevel: RiskLevel,
@@ -59,12 +96,13 @@ export const getVulnerabilityColor = (
 ): string => getSeverityColor(severity);
 
 export const getSeverityChipStyle = (severity: FindingSeverity) => {
-  const color = getSeverityColor(severity);
+  const backgroundColor = getSeverityColor(severity);
+  const textColor = getReadableTextColor(backgroundColor);
 
   return {
-    color,
-    borderColor: color,
-    backgroundColor: withAlpha(color, CHIP_ALPHA_SUFFIX),
+    color: textColor,
+    borderColor: backgroundColor,
+    backgroundColor,
   } as const;
 };
 
@@ -78,10 +116,13 @@ export const getFindingStateChipStyle = (state: FindingState) =>
   FINDING_STATE_CHIP_STYLES[state];
 
 export const getSeverityFilterActiveStyle = (severity: FindingSeverity) =>
-  ({
-    backgroundColor: getSeverityColor(severity),
-    color: FILTER_ACTIVE_TEXT_COLOR,
-  }) as const;
+  (() => {
+    const backgroundColor = getSeverityColor(severity);
+    return {
+      backgroundColor,
+      color: getReadableTextColor(backgroundColor),
+    } as const;
+  })();
 
 export const getThreatFilterActiveStyle = (riskLevel: RiskLevel) =>
   getSeverityFilterActiveStyle(mapRiskLevelToSeverity(riskLevel));
@@ -91,13 +132,11 @@ export const getVulnerabilityFilterActiveStyle = (
 ) => getSeverityFilterActiveStyle(severity);
 
 export const getFindingTabStyle = (isActive: boolean, color: string) => ({
-  color,
+  color: isActive ? getReadableTextColor(color) : "var(--muted-foreground)",
   borderBottomColor: isActive ? color : "transparent",
   borderBottomWidth: isActive ? "3px" : "2px",
   boxShadow: isActive ? `inset 0 -1px 0 ${color}` : "none",
-  backgroundColor: isActive
-    ? withAlpha(color, TAB_ALPHA_SUFFIX)
-    : "transparent",
+  backgroundColor: isActive ? color : "transparent",
   fontWeight: isActive ? 600 : 500,
 });
 
