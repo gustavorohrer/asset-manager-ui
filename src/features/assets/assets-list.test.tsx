@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AssetsList } from "@/features/assets/assets-list";
@@ -305,15 +311,16 @@ describe("AssetsList", () => {
 
   it("renders stats cards from summary endpoint data", () => {
     render(<AssetsList />);
+    const summarySection = within(screen.getByLabelText("Asset risk summary"));
 
     expect(
-      screen.getByRole("button", { name: /^Total Inventory\s*\d+$/i }),
+      summarySection.getByRole("button", { name: /^Total Inventory/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /^With Vulnerabilities\s*\d+$/i }),
+      summarySection.getByRole("button", { name: /^With Vulnerabilities/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /^With Threats\s*\d+$/i }),
+      summarySection.getByRole("button", { name: /^With Threats/i }),
     ).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
   });
@@ -372,9 +379,10 @@ describe("AssetsList", () => {
     currentSearchParams = new URLSearchParams("q=gateway&vuln=1");
 
     render(<AssetsList />);
+    const summarySection = within(screen.getByLabelText("Asset risk summary"));
 
     fireEvent.click(
-      screen.getByRole("button", { name: /^With Threats\s*\d+$/i }),
+      summarySection.getByRole("button", { name: /^With Threats/i }),
     );
 
     expect(replaceMock).toHaveBeenCalledWith("/assets?q=gateway&threat=1", {
@@ -388,9 +396,10 @@ describe("AssetsList", () => {
     );
 
     render(<AssetsList />);
+    const summarySection = within(screen.getByLabelText("Asset risk summary"));
 
     fireEvent.click(
-      screen.getByRole("button", { name: /^Total Inventory\s*\d+$/i }),
+      summarySection.getByRole("button", { name: /^Total Inventory/i }),
     );
 
     expect(replaceMock).toHaveBeenCalledWith(
