@@ -5,17 +5,17 @@ Security-focused asset inventory UI designed for fast risk triage review.
 ## 2-3 Minute Demo Flow
 
 1. Open the risk-prioritized inventory:
-   - `https://asset-manager-ui-pi.vercel.app/?findings=1`
+   - [https://asset-manager-ui-pi.vercel.app/?findings=1](https://asset-manager-ui-pi.vercel.app/?findings=1)
 2. On the home view, validate:
    - Risk summary cards with counts and percentages.
    - `Top risky assets (current page)` insight (weighted + normalized top 3).
 3. Open a filtered inventory view:
-   - `https://asset-manager-ui-pi.vercel.app/?q=nimble&threat=1&sortBy=lastScan&sortOrder=desc`
+   - [https://asset-manager-ui-pi.vercel.app/?q=nimble&threat=1&sortBy=lastScan&sortOrder=desc](https://asset-manager-ui-pi.vercel.app/?q=nimble&threat=1&sortBy=lastScan&sortOrder=desc)
 4. Open a concrete asset detail:
-   - `https://asset-manager-ui-pi.vercel.app/assets/AST-041?tab=threats`
+   - [https://asset-manager-ui-pi.vercel.app/assets/AST-041?tab=threats](https://asset-manager-ui-pi.vercel.app/assets/AST-041?tab=threats)
    - Validate component inventory and threat triage flow.
 5. Switch to vulnerability triage:
-   - `https://asset-manager-ui-pi.vercel.app/assets/AST-041?tab=vulnerabilities&severity=high`
+   - [https://asset-manager-ui-pi.vercel.app/assets/AST-041?tab=vulnerabilities&severity=high](https://asset-manager-ui-pi.vercel.app/assets/AST-041?tab=vulnerabilities&severity=high)
    - Validate tab switching, filter state in URL, and findings lists.
 
 Expected reviewer time: ~2-3 minutes.
@@ -70,7 +70,7 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-App URL: `http://localhost:3000`
+App URL: [http://localhost:3000](http://localhost:3000)
 
 Default API base URL (custom backend):
 
@@ -101,7 +101,7 @@ pnpm verify
 
 ## Reviewer Links
 
-- Deployed app: `https://asset-manager-ui-pi.vercel.app/`
-- Hosted backend: `https://asset-manager-production-ddd8.up.railway.app`
-- Backend repository: `https://github.com/gustavorohrer/asset-manager`
-- OpenAPI contract: `https://github.com/gustavorohrer/asset-manager/blob/main/docs/openapi/openapi.yaml`
+- Deployed app: [https://asset-manager-ui-pi.vercel.app/](https://asset-manager-ui-pi.vercel.app/)
+- Hosted backend: [https://asset-manager-production-ddd8.up.railway.app](https://asset-manager-production-ddd8.up.railway.app)
+- Backend repository: [https://github.com/gustavorohrer/asset-manager](https://github.com/gustavorohrer/asset-manager)
+- OpenAPI contract: [https://github.com/gustavorohrer/asset-manager/blob/main/docs/openapi/openapi.yaml](https://github.com/gustavorohrer/asset-manager/blob/main/docs/openapi/openapi.yaml)
