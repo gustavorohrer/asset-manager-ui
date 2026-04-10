@@ -1,22 +1,31 @@
 # Eclypsium Frontend Challenge
 
-Security-focused asset inventory UI built for quick reviewer evaluation.
+Security-focused asset inventory UI designed for fast risk triage review.
 
-## Quick Review (3-5 minutes)
+## 2-3 Minute Demo Flow
 
-1. Open the deployed app: `https://asset-manager-ui-pi.vercel.app/`
-2. On `/`, validate:
-   - Risk summary cards with counts + percentages.
-   - `Top risky assets (current page)` insight (Top 3).
-   - Search by asset name.
-   - `With vulnerabilities` and `With threats` filters.
-   - Advanced last-scan date filters.
-   - Sorting and pagination.
-3. Open any asset and validate:
-   - Component inventory in the details page.
-   - `Threats` and `Vulnerabilities` tabs.
-   - Severity/risk filtering and `Load more`.
-4. Verify retry paths by forcing a temporary network error.
+1. Open the risk-prioritized inventory:
+   - `https://asset-manager-ui-pi.vercel.app/?findings=1`
+2. On the home view, validate:
+   - Risk summary cards with counts and percentages.
+   - `Top risky assets (current page)` insight (score-based top 3).
+3. Open a filtered inventory view:
+   - `https://asset-manager-ui-pi.vercel.app/?q=nimble&threat=1&sortBy=lastScan&sortOrder=desc`
+4. Open a concrete asset detail:
+   - `https://asset-manager-ui-pi.vercel.app/assets/AST-041?tab=threats`
+   - Validate component inventory and threat triage flow.
+5. Switch to vulnerability triage:
+   - `https://asset-manager-ui-pi.vercel.app/assets/AST-041?tab=vulnerabilities&severity=high`
+   - Validate tab switching, filter state in URL, and findings lists.
+
+Expected reviewer time: ~2-3 minutes.
+
+## Why This Demo Path
+
+- It mirrors the intended workflow: inventory prioritization to asset investigation to findings triage.
+- It highlights user-facing risk clarity first (percentages + top risky assets), then drill-down depth.
+- It uses reproducible URLs for deterministic review.
+- The demo runs against the same custom backend contract used by this frontend.
 
 ## Scope Implemented
 
@@ -24,7 +33,7 @@ Core:
 - Asset listing with API-backed pagination.
 - Filterable inventory by relevant criteria.
 
-Optional/extended:
+Optional enhancements:
 - Asset detail view with component breakdown.
 - Threat and vulnerability analysis by asset.
 - Risk summary cards (`Total Inventory`, `With Threats`, `With Vulnerabilities`).
@@ -34,19 +43,22 @@ Optional/extended:
 - Explicit loading, empty, error, and retry states.
 - Runtime contract validation with Zod at API boundaries.
 - Unit/component tests with Vitest + Testing Library.
-- Smoke E2E reviewer flow with Playwright (deployed app).
+- Smoke E2E reviewer flow against the deployed app (Playwright).
 
-## Tech Stack
+## Design Decisions & Trade-offs
 
-- Next.js App Router + React 19 + TypeScript.
-- TanStack Query for server-state orchestration.
-- Zod for runtime API contract validation.
-- Tailwind CSS + Base UI primitives.
+- URL-driven filter state for reproducible reviewer checks and shareable deep links.
+- Runtime schema validation (Zod) at API boundaries for safer UI rendering.
+- `Top risky assets` is intentionally current-page/filter-aware (fast, useful, not positioned as global analytics).
+- Smoke E2E is focused on reviewer-critical flow; broader E2E coverage is intentionally out of scope.
+- This frontend intentionally uses the custom backend contract used by this implementation.
 
-Code organization:
-- `src/api`: API client functions.
-- `src/domain`: schemas and domain types.
-- `src/features/assets`: feature-level UI and query hooks.
+## Out of Scope
+
+- Asset create/update/delete workflows.
+- Authentication and role/permission model.
+- Historical trends over time.
+- Global risk analytics across the full dataset beyond current filtered results.
 
 ## Local Setup
 
@@ -60,7 +72,7 @@ pnpm dev
 
 App URL: `http://localhost:3000`
 
-Default API base URL:
+Default API base URL (custom backend):
 
 ```bash
 NEXT_PUBLIC_API_BASE_URL=https://asset-manager-production-ddd8.up.railway.app
@@ -75,16 +87,11 @@ pnpm test:e2e
 
 Use `E2E_BASE_URL` to override the target URL when needed.
 
-Full local verification gate:
+Verification gate:
 
 ```bash
 pnpm verify
 ```
-
-## Notes
-
-- This frontend targets the custom backend contract listed below.
-- Legacy mock files are kept in `backend-mock/` and `docker-compose.yml` for reference only, and are not used by the active app/CI path.
 
 ## Reviewer Links
 
