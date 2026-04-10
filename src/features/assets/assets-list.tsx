@@ -8,6 +8,7 @@ import { AssetsListToolbar } from "@/features/assets/assets-list-toolbar";
 import { AssetsRiskPriorityBanner } from "@/features/assets/assets-risk-priority-banner";
 import type { AssetStatsFilter } from "@/features/assets/assets-stats-cards";
 import { AssetsStatsCards } from "@/features/assets/assets-stats-cards";
+import { TopRiskyAssetsInsight } from "@/features/assets/top-risky-assets-insight";
 import { useAssetsListUrlFilters } from "@/features/assets/use-assets-list-url-filters";
 import { useAssetsPageQuery } from "@/features/assets/use-assets-query";
 import { useAssetsSummaryQuery } from "@/features/assets/use-assets-summary-query";
@@ -274,6 +275,8 @@ export function AssetsList() {
           void refetchSummary();
         }}
       />
+
+      <TopRiskyAssetsInsight assets={filteredAssets} />
 
       {asyncStatusMessage && (
         <p

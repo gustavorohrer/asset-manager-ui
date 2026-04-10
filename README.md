@@ -6,6 +6,8 @@ Security-focused asset inventory UI built for quick reviewer evaluation.
 
 1. Open the deployed app: `https://asset-manager-ui-pi.vercel.app/`
 2. On `/`, validate:
+   - Risk summary cards with counts + percentages.
+   - `Top risky assets (current page)` insight (Top 3).
    - Search by asset name.
    - `With vulnerabilities` and `With threats` filters.
    - Advanced last-scan date filters.
@@ -26,10 +28,13 @@ Optional/extended:
 - Asset detail view with component breakdown.
 - Threat and vulnerability analysis by asset.
 - Risk summary cards (`Total Inventory`, `With Threats`, `With Vulnerabilities`).
+- Percentage context on risk cards (e.g., `63% of total assets`).
+- `Top risky assets (current page)` insight (score-based, filter-aware).
 - URL-driven filter state for reproducible review steps.
 - Explicit loading, empty, error, and retry states.
 - Runtime contract validation with Zod at API boundaries.
 - Unit/component tests with Vitest + Testing Library.
+- Smoke E2E reviewer flow with Playwright (deployed app).
 
 ## Tech Stack
 
