@@ -61,6 +61,21 @@ Default API base URL:
 NEXT_PUBLIC_API_BASE_URL=https://asset-manager-production-ddd8.up.railway.app
 ```
 
+Optional deployed smoke E2E:
+
+```bash
+pnpm exec playwright install chromium
+pnpm test:e2e
+```
+
+Use `E2E_BASE_URL` to override the target URL when needed.
+
+Full local verification gate:
+
+```bash
+pnpm verify
+```
+
 ## Notes
 
 - This frontend targets the custom backend contract listed below.
