@@ -1,5 +1,7 @@
 version: '3.8'
 
+# Legacy mock service kept for reference only.
+# The active app runtime uses the custom hosted backend configured via NEXT_PUBLIC_API_BASE_URL.
 services:
   backend-mock:
     image: mockserver/mockserver:5.15.0

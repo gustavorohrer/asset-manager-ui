@@ -9,7 +9,6 @@
       "!**/build",
       "!**/coverage",
       "!**/backend-mock",
-      "!**/fe-bootstrap-temp",
       "!**/.aiassistant",
       "!next-env.d.ts"
     ]
