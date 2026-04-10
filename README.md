@@ -93,6 +93,12 @@ Verification gate:
 pnpm verify
 ```
 
+## CI Checks
+
+- `Contract` job: biome checks, unit tests, live API contract tests, build.
+- `E2E Smoke` job: Playwright smoke flow (Chromium) against deploy URL, with artifacts uploaded on failure.
+- Optional GitHub Repository Variables: `API_BASE_URL` and `E2E_BASE_URL` (fallbacks are already configured).
+
 ## Reviewer Links
 
 - Deployed app: `https://asset-manager-ui-pi.vercel.app/`
