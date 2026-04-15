@@ -163,22 +163,23 @@ describe("AssetsList", () => {
     expect(screen.queryByText("Database Server")).not.toBeInTheDocument();
   });
 
-  it("does not send risk flags to query hook when URL has no risk params", () => {
+  it("keeps risk filters inactive when URL has no risk params", () => {
     render(<AssetsList />);
 
-    expect(useAssetsPageQueryMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        page: 1,
-        search: "",
-        sortBy: "createdAt",
-        sortOrder: "desc",
-        lastScanFrom: undefined,
-        lastScanTo: undefined,
-        hasVulnerabilities: undefined,
-        hasThreats: undefined,
-        hasFindings: undefined,
-      }),
-    );
+    expect(
+      screen
+        .getByRole("button", { name: "With vulnerabilities" })
+        .getAttribute("aria-pressed"),
+    ).toBe("false");
+    expect(
+      screen
+        .getByRole("button", { name: "With threats" })
+        .getAttribute("aria-pressed"),
+    ).toBe("false");
+
+    expect(screen.getByText("Database Server")).toBeInTheDocument();
+    expect(screen.getByText("Web Gateway")).toBeInTheDocument();
+    expect(screen.getByText("Gateway Replica")).toBeInTheDocument();
   });
 
   it("falls back to safe defaults when sort and page URL params are invalid", () => {
@@ -188,55 +189,35 @@ describe("AssetsList", () => {
 
     render(<AssetsList />);
 
-    expect(useAssetsPageQueryMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        page: 1,
-        search: "",
-        sortBy: "createdAt",
-        sortOrder: "desc",
-        lastScanFrom: undefined,
-        lastScanTo: undefined,
-        hasVulnerabilities: undefined,
-        hasThreats: undefined,
-        hasFindings: undefined,
-      }),
-    );
+    expect(screen.getByDisplayValue("")).toBeInTheDocument();
+    expect(screen.getByLabelText("Sort by")).toHaveValue("createdAt-desc");
+
+    expect(
+      screen
+        .getByRole("button", { name: "With vulnerabilities" })
+        .getAttribute("aria-pressed"),
+    ).toBe("false");
+    expect(
+      screen
+        .getByRole("button", { name: "With threats" })
+        .getAttribute("aria-pressed"),
+    ).toBe("false");
   });
 
-  it("sends only selected risk flag to query hook", () => {
+  it("applies selected risk flag from URL to visible inventory", () => {
     currentSearchParams = new URLSearchParams("vuln=1");
-    render(<AssetsList />);
+    const { rerender } = render(<AssetsList />);
 
-    expect(useAssetsPageQueryMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        page: 1,
-        search: "",
-        sortBy: "createdAt",
-        sortOrder: "desc",
-        lastScanFrom: undefined,
-        lastScanTo: undefined,
-        hasVulnerabilities: true,
-        hasThreats: undefined,
-        hasFindings: undefined,
-      }),
-    );
+    expect(screen.getByText("Web Gateway")).toBeInTheDocument();
+    expect(screen.queryByText("Database Server")).not.toBeInTheDocument();
+    expect(screen.queryByText("Gateway Replica")).not.toBeInTheDocument();
 
     currentSearchParams = new URLSearchParams("threat=1");
-    render(<AssetsList />);
+    rerender(<AssetsList />);
 
-    expect(useAssetsPageQueryMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        page: 1,
-        search: "",
-        sortBy: "createdAt",
-        sortOrder: "desc",
-        lastScanFrom: undefined,
-        lastScanTo: undefined,
-        hasVulnerabilities: undefined,
-        hasThreats: true,
-        hasFindings: undefined,
-      }),
-    );
+    expect(screen.queryByText("Database Server")).not.toBeInTheDocument();
+    expect(screen.getByText("Gateway Replica")).toBeInTheDocument();
+    expect(screen.queryByText("Web Gateway")).not.toBeInTheDocument();
   });
 
   it("applies risk-priority filter on first load when URL is clean and there are findings", async () => {
@@ -562,24 +543,36 @@ describe("AssetsList", () => {
     );
   });
 
-  it("reads page param and sends it to assets page query hook", () => {
+  it("reads page param and highlights current page in pagination", () => {
+    useAssetsPageQueryMock.mockImplementation((params?: { page?: number }) => {
+      const page = params?.page ?? 1;
+
+      return {
+        data: {
+          data: assets,
+          pagination: {
+            page,
+            pageSize: 20,
+            totalPages: 3,
+            total: 45,
+          },
+        },
+        error: null,
+        isLoading: false,
+        isFetching: false,
+        refetch: vi.fn(),
+      };
+    });
+
     currentSearchParams = new URLSearchParams("page=2");
 
     render(<AssetsList />);
 
-    expect(useAssetsPageQueryMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        page: 2,
-        search: "",
-        sortBy: "createdAt",
-        sortOrder: "desc",
-        lastScanFrom: undefined,
-        lastScanTo: undefined,
-        hasVulnerabilities: undefined,
-        hasThreats: undefined,
-        hasFindings: undefined,
-      }),
+    expect(screen.getByRole("button", { name: "2" })).toHaveAttribute(
+      "aria-current",
+      "page",
     );
+    expect(screen.getByText("Page 2 of 3 (45 assets)")).toBeInTheDocument();
   });
 
   it("updates URL with next page and scrolls to assets section on page change", async () => {
