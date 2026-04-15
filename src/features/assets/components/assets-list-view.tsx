@@ -9,13 +9,14 @@ import type {
   AssetSortOrder,
 } from "@/domain/assets";
 import type { Pagination } from "@/domain/vulnerabilities";
-import { AssetsListFilterControls } from "@/features/assets/assets-list-filter-controls";
-import { AssetsListResults } from "@/features/assets/assets-list-results";
-import { AssetsListToolbar } from "@/features/assets/assets-list-toolbar";
-import { AssetsRiskPriorityBanner } from "@/features/assets/assets-risk-priority-banner";
-import type { AssetStatsFilter } from "@/features/assets/assets-stats-cards";
-import { AssetsStatsCards } from "@/features/assets/assets-stats-cards";
-import { TopRiskyAssetsInsight } from "@/features/assets/top-risky-assets-insight";
+import { TopRiskyAssetsInsight } from "@/features/assets/insights/top-risky-assets-insight";
+
+import { AssetsListFilterControls } from "./assets-list-filter-controls";
+import { AssetsListResults } from "./assets-list-results";
+import { AssetsListToolbar } from "./assets-list-toolbar";
+import { AssetsRiskPriorityBanner } from "./assets-risk-priority-banner";
+import type { AssetStatsFilter } from "./assets-stats-cards";
+import { AssetsStatsCards } from "./assets-stats-cards";
 
 type AssetsListViewProps = {
   sectionRef: RefObject<HTMLElement | null>;

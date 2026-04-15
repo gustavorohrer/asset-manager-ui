@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { AssetsStatsCards } from "@/features/assets/assets-stats-cards";
+import { AssetsStatsCards } from "@/features/assets/components/assets-stats-cards";
 
 describe("AssetsStatsCards", () => {
   const summary = {

@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import type { Asset } from "@/domain/assets";
-import { TopRiskyAssetsInsight } from "@/features/assets/top-risky-assets-insight";
+import { TopRiskyAssetsInsight } from "@/features/assets/insights/top-risky-assets-insight";
 
 function createAsset(
   id: string,

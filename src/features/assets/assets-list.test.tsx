@@ -24,11 +24,11 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => currentSearchParams,
 }));
 
-vi.mock("@/features/assets/use-assets-query", () => ({
+vi.mock("@/features/assets/hooks/use-assets-query", () => ({
   useAssetsPageQuery: (...args: unknown[]) => useAssetsPageQueryMock(...args),
 }));
 
-vi.mock("@/features/assets/use-assets-summary-query", () => ({
+vi.mock("@/features/assets/hooks/use-assets-summary-query", () => ({
   useAssetsSummaryQuery: (...args: unknown[]) =>
     useAssetsSummaryQueryMock(...args),
 }));

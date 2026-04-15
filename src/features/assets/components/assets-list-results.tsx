@@ -3,7 +3,8 @@
 import { Button } from "@/components/ui/button";
 import type { Asset } from "@/domain/assets";
 import type { Pagination } from "@/domain/vulnerabilities";
-import { AssetList } from "@/features/assets/asset-list";
+
+import { AssetList } from "./asset-list";
 
 type AssetsListResultsProps = {
   assets: Asset[];

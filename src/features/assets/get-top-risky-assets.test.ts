@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Asset } from "@/domain/assets";
-import { getTopRiskyAssets } from "@/features/assets/get-top-risky-assets";
+import { getTopRiskyAssets } from "@/features/assets/insights/get-top-risky-assets";
 
 const FIXED_NOW = new Date("2026-02-01T00:00:00.000Z");
 

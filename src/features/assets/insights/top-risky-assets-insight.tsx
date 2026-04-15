@@ -4,7 +4,7 @@ import type { Asset } from "@/domain/assets";
 import {
   getTopRiskyAssets,
   type RiskLevel,
-} from "@/features/assets/get-top-risky-assets";
+} from "@/features/assets/insights/get-top-risky-assets";
 
 type TopRiskyAssetsInsightProps = {
   assets: Asset[];

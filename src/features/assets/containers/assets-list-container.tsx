@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 
 import { AssetsListView } from "@/features/assets/components/assets-list-view";
-import type { AssetStatsFilter } from "@/features/assets/assets-stats-cards";
-import { useAssetsListUrlFilters } from "@/features/assets/use-assets-list-url-filters";
-import { useAssetsPageQuery } from "@/features/assets/use-assets-query";
-import { useAssetsSummaryQuery } from "@/features/assets/use-assets-summary-query";
+import type { AssetStatsFilter } from "@/features/assets/components/assets-stats-cards";
+import { useAssetsListUrlFilters } from "@/features/assets/hooks/use-assets-list-url-filters";
+import { useAssetsPageQuery } from "@/features/assets/hooks/use-assets-query";
+import { useAssetsSummaryQuery } from "@/features/assets/hooks/use-assets-summary-query";
 
 const RISK_PRIORITY_DISMISSED_SESSION_KEY = "assets-risk-priority-dismissed";
 const SEARCH_DEBOUNCE_MS = 300;

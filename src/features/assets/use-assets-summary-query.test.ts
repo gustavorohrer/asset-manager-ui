@@ -14,7 +14,7 @@ vi.mock("@/api/assets", () => ({
 import {
   assetsSummaryQueryKey,
   useAssetsSummaryQuery,
-} from "@/features/assets/use-assets-summary-query";
+} from "@/features/assets/hooks/use-assets-summary-query";
 
 describe("useAssetsSummaryQuery", () => {
   beforeEach(() => {
