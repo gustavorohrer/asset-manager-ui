@@ -6,14 +6,14 @@ import type { AssetSortBy, AssetSortOrder } from "@/domain/assets";
 
 export type AssetsPageQueryParams = {
   page: number;
-  search?: string,
-  sortBy?: AssetSortBy,
-  sortOrder?: AssetSortOrder,
-  lastScanFrom?: string,
-  lastScanTo?: string,
-  hasVulnerabilities?: boolean,
-  hasThreats?: boolean,
-  hasFindings?: boolean,
+  search?: string;
+  sortBy?: AssetSortBy;
+  sortOrder?: AssetSortOrder;
+  lastScanFrom?: string;
+  lastScanTo?: string;
+  hasVulnerabilities?: boolean;
+  hasThreats?: boolean;
+  hasFindings?: boolean;
 };
 
 export function assetsPageQueryKey({

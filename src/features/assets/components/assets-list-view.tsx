@@ -36,7 +36,10 @@ type AssetsListViewProps = {
   onSearchFocus: () => void;
   onSearchBlur: () => void;
   onSearchChange: (value: string) => void;
-  onSortChange: (nextSortBy: AssetSortBy, nextSortOrder: AssetSortOrder) => void;
+  onSortChange: (
+    nextSortBy: AssetSortBy,
+    nextSortOrder: AssetSortOrder,
+  ) => void;
   showAdvancedFilters: boolean;
   hasAdvancedFiltersActive: boolean;
   withVulnerabilities?: boolean;

@@ -285,7 +285,9 @@ export function AssetsListContainer() {
       lastScanTo={lastScanTo}
       isDateRangeInvalid={isDateRangeInvalid}
       dateRangeErrorId={dateRangeErrorId}
-      onToggleAdvancedFilters={() => setShowAdvancedFilters(!showAdvancedFilters)}
+      onToggleAdvancedFilters={() =>
+        setShowAdvancedFilters(!showAdvancedFilters)
+      }
       onToggleVulnerabilities={() =>
         updateFilters({
           withVulnerabilities: !withVulnerabilities,
