@@ -65,17 +65,17 @@ export function AssetsListContainer() {
     setLocalSearchQuery(searchQuery);
   }, [isSearchInputFocused, searchQuery]);
 
-  const { data, error, isLoading, isFetching, refetch } = useAssetsPageQuery(
+  const { data, error, isLoading, isFetching, refetch } = useAssetsPageQuery({
     page,
-    searchQuery,
+    search: searchQuery,
     sortBy,
     sortOrder,
-    lastScanFrom ? `${lastScanFrom}T00:00:00Z` : undefined,
-    lastScanTo ? `${lastScanTo}T23:59:59Z` : undefined,
-    withVulnerabilities,
-    withThreats,
+    lastScanFrom: lastScanFrom ? `${lastScanFrom}T00:00:00Z` : undefined,
+    lastScanTo: lastScanTo ? `${lastScanTo}T23:59:59Z` : undefined,
+    hasVulnerabilities: withVulnerabilities,
+    hasThreats: withThreats,
     hasFindings,
-  );
+  });
 
   const {
     data: summary,

@@ -4,8 +4,8 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getAssets } from "@/api/assets";
 import type { AssetSortBy, AssetSortOrder } from "@/domain/assets";
 
-export function assetsPageQueryKey(
-  page: number,
+export type AssetsPageQueryParams = {
+  page: number;
   search?: string,
   sortBy?: AssetSortBy,
   sortOrder?: AssetSortOrder,
@@ -14,7 +14,19 @@ export function assetsPageQueryKey(
   hasVulnerabilities?: boolean,
   hasThreats?: boolean,
   hasFindings?: boolean,
-) {
+};
+
+export function assetsPageQueryKey({
+  page,
+  search,
+  sortBy,
+  sortOrder,
+  lastScanFrom,
+  lastScanTo,
+  hasVulnerabilities,
+  hasThreats,
+  hasFindings,
+}: AssetsPageQueryParams) {
   return [
     "assets",
     "page",
@@ -32,19 +44,19 @@ export function assetsPageQueryKey(
   ] as const;
 }
 
-export function useAssetsPageQuery(
-  page: number,
-  search?: string,
-  sortBy?: AssetSortBy,
-  sortOrder?: AssetSortOrder,
-  lastScanFrom?: string,
-  lastScanTo?: string,
-  hasVulnerabilities?: boolean,
-  hasThreats?: boolean,
-  hasFindings?: boolean,
-) {
+export function useAssetsPageQuery({
+  page,
+  search,
+  sortBy,
+  sortOrder,
+  lastScanFrom,
+  lastScanTo,
+  hasVulnerabilities,
+  hasThreats,
+  hasFindings,
+}: AssetsPageQueryParams) {
   return useQuery({
-    queryKey: assetsPageQueryKey(
+    queryKey: assetsPageQueryKey({
       page,
       search,
       sortBy,
@@ -54,7 +66,7 @@ export function useAssetsPageQuery(
       hasVulnerabilities,
       hasThreats,
       hasFindings,
-    ),
+    }),
     queryFn: () =>
       getAssets(
         page,

@@ -87,17 +87,17 @@ describe("AssetsList", () => {
       refetch: vi.fn(),
     });
     useAssetsPageQueryMock.mockImplementation(
-      (
-        _page?: number,
-        search?: string,
-        _sortBy?: string,
-        _sortOrder?: string,
-        _lastScanFrom?: string,
-        _lastScanTo?: string,
-        hasVulnerabilities?: boolean,
-        hasThreats?: boolean,
-        hasFindings?: boolean,
-      ) => {
+      (params?: {
+        page?: number;
+        search?: string;
+        hasVulnerabilities?: boolean;
+        hasThreats?: boolean;
+        hasFindings?: boolean;
+      }) => {
+        const search = params?.search;
+        const hasVulnerabilities = params?.hasVulnerabilities;
+        const hasThreats = params?.hasThreats;
+        const hasFindings = params?.hasFindings;
         let filtered = [...assets];
 
         if (search) {
@@ -167,15 +167,17 @@ describe("AssetsList", () => {
     render(<AssetsList />);
 
     expect(useAssetsPageQueryMock).toHaveBeenCalledWith(
-      1,
-      "",
-      "createdAt",
-      "desc",
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
+      expect.objectContaining({
+        page: 1,
+        search: "",
+        sortBy: "createdAt",
+        sortOrder: "desc",
+        lastScanFrom: undefined,
+        lastScanTo: undefined,
+        hasVulnerabilities: undefined,
+        hasThreats: undefined,
+        hasFindings: undefined,
+      }),
     );
   });
 
@@ -187,15 +189,17 @@ describe("AssetsList", () => {
     render(<AssetsList />);
 
     expect(useAssetsPageQueryMock).toHaveBeenCalledWith(
-      1,
-      "",
-      "createdAt",
-      "desc",
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
+      expect.objectContaining({
+        page: 1,
+        search: "",
+        sortBy: "createdAt",
+        sortOrder: "desc",
+        lastScanFrom: undefined,
+        lastScanTo: undefined,
+        hasVulnerabilities: undefined,
+        hasThreats: undefined,
+        hasFindings: undefined,
+      }),
     );
   });
 
@@ -204,30 +208,34 @@ describe("AssetsList", () => {
     render(<AssetsList />);
 
     expect(useAssetsPageQueryMock).toHaveBeenCalledWith(
-      1,
-      "",
-      "createdAt",
-      "desc",
-      undefined,
-      undefined,
-      true,
-      undefined,
-      undefined,
+      expect.objectContaining({
+        page: 1,
+        search: "",
+        sortBy: "createdAt",
+        sortOrder: "desc",
+        lastScanFrom: undefined,
+        lastScanTo: undefined,
+        hasVulnerabilities: true,
+        hasThreats: undefined,
+        hasFindings: undefined,
+      }),
     );
 
     currentSearchParams = new URLSearchParams("threat=1");
     render(<AssetsList />);
 
     expect(useAssetsPageQueryMock).toHaveBeenCalledWith(
-      1,
-      "",
-      "createdAt",
-      "desc",
-      undefined,
-      undefined,
-      undefined,
-      true,
-      undefined,
+      expect.objectContaining({
+        page: 1,
+        search: "",
+        sortBy: "createdAt",
+        sortOrder: "desc",
+        lastScanFrom: undefined,
+        lastScanTo: undefined,
+        hasVulnerabilities: undefined,
+        hasThreats: true,
+        hasFindings: undefined,
+      }),
     );
   });
 
@@ -560,34 +568,40 @@ describe("AssetsList", () => {
     render(<AssetsList />);
 
     expect(useAssetsPageQueryMock).toHaveBeenCalledWith(
-      2,
-      "",
-      "createdAt",
-      "desc",
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
+      expect.objectContaining({
+        page: 2,
+        search: "",
+        sortBy: "createdAt",
+        sortOrder: "desc",
+        lastScanFrom: undefined,
+        lastScanTo: undefined,
+        hasVulnerabilities: undefined,
+        hasThreats: undefined,
+        hasFindings: undefined,
+      }),
     );
   });
 
   it("updates URL with next page and scrolls to assets section on page change", async () => {
-    useAssetsPageQueryMock.mockImplementation((page = 1) => ({
-      data: {
-        data: assets,
-        pagination: {
-          page,
-          pageSize: 20,
-          totalPages: 3,
-          total: 45,
+    useAssetsPageQueryMock.mockImplementation((params?: { page?: number }) => {
+      const page = params?.page ?? 1;
+
+      return {
+        data: {
+          data: assets,
+          pagination: {
+            page,
+            pageSize: 20,
+            totalPages: 3,
+            total: 45,
+          },
         },
-      },
-      error: null,
-      isLoading: false,
-      isFetching: false,
-      refetch: vi.fn(),
-    }));
+        error: null,
+        isLoading: false,
+        isFetching: false,
+        refetch: vi.fn(),
+      };
+    });
 
     const { rerender } = render(<AssetsList />);
 
